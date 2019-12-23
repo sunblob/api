@@ -27,6 +27,7 @@ const app = express()
 
 // файлы с путями
 const auth = require('./paths/auth')
+const points = require('./paths/points')
 
 //Body parse - нужен для обработки POST/PUT запросов
 app.use(express.json())
@@ -42,11 +43,14 @@ app.use(helmet())
 app.use(hpp())
 app.use(xss())
 
+app.use(cors())
+
 //Установка статического фолдера
 app.use(express.static(path.join(__dirname, 'public')))
 
 // привязка путей
 app.use('/api/auth', auth)
+app.use('/api/points', points)
 
 app.use(errorHandler)
 
