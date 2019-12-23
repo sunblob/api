@@ -25,6 +25,11 @@ exports.protect = asyncHandler(async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
         req.user = await User.findById(decoded.id)
+        console.log(req.user)
+
+        if (req.user.loggedIn !== true) {
+            return next(new ErrorResponse('войдите в приложение еще раз', 401))
+        }
         next()
     } catch (error) {
         return next(

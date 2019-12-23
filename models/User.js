@@ -28,9 +28,13 @@ const UserSchema = mongoose.Schema(
             minlength: 6,
             select: false
         },
-        confirmed: {
+        isConfirmed: {
             type: Boolean,
             default: false
+        },
+        loggedIn: {
+            type: Boolean,
+            default: true
         }
     },
     {
@@ -57,10 +61,6 @@ UserSchema.methods.getSignedJwtToken = function() {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE
     })
-
-    // return await jwtr.sign({ id: this._id }, process.env.JWT_SECRET, {
-    //     expiresIn: process.env.JWT_EXPIRE
-    // })
 }
 
 //сравниваем пароли в бд и то что пришло

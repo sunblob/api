@@ -4,7 +4,8 @@ const {
     getPoint,
     createPoint,
     updatePoint,
-    deletePoint
+    deletePoint,
+    getPointsForUser
 } = require('./../controllers/pointsController')
 
 const router = express.Router()
@@ -15,6 +16,9 @@ router
     .route('/')
     .get(getAllPoints)
     .post(protect, authorize(true), createPoint)
+
+router.get('/currentuser', protect, getPointsForUser)
+
 router
     .route('/:id')
     .get(getPoint)

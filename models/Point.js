@@ -14,6 +14,10 @@ const PointSchema = mongoose.Schema({
         type: String,
         maxLength: [50, 'Подсказка не может быть длиннее 50 символов']
     },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
     lat: {
         type: Number,
         required: true

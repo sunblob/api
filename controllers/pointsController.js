@@ -33,6 +33,21 @@ exports.getPoint = asyncHandler(async (req, res, next) => {
 })
 
 /*
+    @desc       получение всех точек текущего пользователя
+    @route      GET /api/points
+    @access     private
+*/
+exports.getPointsForUser = asyncHandler(async (req, res, next) => {
+    const points = await Point.find({ user: req.user.id })
+
+    res.status(200).json({
+        success: true,
+        count: points.length,
+        data: points
+    })
+})
+
+/*
     @desc       добавление точки
     @route      POST /api/points
     @access     private
@@ -41,7 +56,7 @@ exports.createPoint = asyncHandler(async (req, res, next) => {
     // т.к. у точки должен быть пользователь мы достаем его id и помещаем в тело запроса
     req.body.user = req.user.id
 
-    const point = Point.create(req.body)
+    const point = await Point.create(req.body)
 
     res.status(201).json({
         success: true,

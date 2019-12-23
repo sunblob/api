@@ -9,11 +9,13 @@ const User = require('../models/User')
 */
 exports.signUp = asyncHandler(async (req, res, next) => {
     const { name, email, password } = req.body
+    const loggedIn = true
 
     const user = await User.create({
         name,
         email,
-        password
+        password,
+        loggedIn
     })
 
     sendTokenResponse(user, 200, res)
@@ -26,6 +28,7 @@ exports.signUp = asyncHandler(async (req, res, next) => {
 */
 exports.signIn = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body
+    const loggedIn = true
 
     // проверка почты и пароля
     if (!email || !password) {
@@ -33,11 +36,15 @@ exports.signIn = asyncHandler(async (req, res, next) => {
     }
 
     // проверка на пользователя
-    const user = await User.findOne({ email }).select('+password')
+    let user = await User.findOne({ email }).select('+password')
 
     if (!user) {
         return next(new ErrorResponse('Неправильно введенные данные', 401))
     }
+
+    user = await User.findOneAndUpdate({ email }, { loggedIn }).select(
+        '+password'
+    )
 
     // проверка если пароли совпадают
     const isMatch = await user.matchPassword(password)
@@ -55,9 +62,21 @@ exports.signIn = asyncHandler(async (req, res, next) => {
     @access     private
 */
 exports.logOut = asyncHandler(async (req, res, next) => {
-    const user = await User.findById(req.user.id)
+    const loggedIn = false
+    const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { loggedIn },
+        {
+            new: true,
+            runValidators: true
+        }
+    )
 
-    logOutAndDeleteToken(user, 200, res)
+    // logOutAndDeleteToken(user, 200, res)
+    res.status(200).json({
+        succss: true,
+        data: `loggedOut with id ${user.id}`
+    })
 })
 
 /*
@@ -88,17 +107,6 @@ const logOutAndDeleteToken = (user, statusCode, res) => {
 const sendTokenResponse = (user, statusCode, res) => {
     // создание токена
     const token = user.getSignedJwtToken()
-
-    // const options = {
-    //     expires: new Date(
-    //         Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 3600 * 1000
-    //     ), // токен валиден 30 дней
-    //     httpOnly: true
-    // }
-
-    // if (process.env.NODE_ENV === 'production') {
-    //     options.secure = true
-    // }
 
     res.status(statusCode).json({
         success: true,
