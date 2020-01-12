@@ -76,7 +76,6 @@ exports.logOut = asyncHandler(async (req, res, next) => {
         }
     )
 
-    // logOutAndDeleteToken(user, 200, res)
     res.status(200).json({
         succss: true,
         data: `loggedOut with id ${user.id}`
@@ -100,9 +99,8 @@ exports.currentUser = asyncHandler(async (req, res, next) => {
 // Создание токена и отправка ответа
 const sendTokenResponse = (user, statusCode, res) => {
     // создание токена
-    // const token = user.getSignedJwtToken()
     const token = user.getToken()
-    console.log('token2: ', token)
+    console.log('token: ', token)
 
     res.status(statusCode).json({
         success: true,
