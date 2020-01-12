@@ -1,6 +1,8 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
 const User = require('../models/User')
+const TokGen = require('tokgen')
+const generator = new TokGen()
 
 /*
     @desc       регистарция пользователя
@@ -9,13 +11,13 @@ const User = require('../models/User')
 */
 exports.signUp = asyncHandler(async (req, res, next) => {
     const { name, email, password } = req.body
-    const loggedIn = true
+    const token = generator.generate()
 
     const user = await User.create({
+        token,
         name,
         email,
-        password,
-        loggedIn
+        password
     })
 
     sendTokenResponse(user, 200, res)
@@ -28,7 +30,7 @@ exports.signUp = asyncHandler(async (req, res, next) => {
 */
 exports.signIn = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body
-    const loggedIn = true
+    const token = generator.generate()
 
     // проверка почты и пароля
     if (!email || !password) {
@@ -42,9 +44,7 @@ exports.signIn = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Неправильно введенные данные', 401))
     }
 
-    user = await User.findOneAndUpdate({ email }, { loggedIn }).select(
-        '+password'
-    )
+    user = await User.findOneAndUpdate({ token, email }).select('+password')
 
     // проверка если пароли совпадают
     const isMatch = await user.matchPassword(password)
@@ -53,7 +53,11 @@ exports.signIn = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Неправильно введенные данные', 401))
     }
 
-    sendTokenResponse(user, 200, res)
+    res.status(200).json({
+        status: true,
+        token
+    })
+    // sendTokenResponse(user, 200, res)
 })
 
 /*
@@ -62,10 +66,10 @@ exports.signIn = asyncHandler(async (req, res, next) => {
     @access     private
 */
 exports.logOut = asyncHandler(async (req, res, next) => {
-    const loggedIn = false
+    const token = ''
     const user = await User.findByIdAndUpdate(
         req.user.id,
-        { loggedIn },
+        { token },
         {
             new: true,
             runValidators: true
@@ -106,10 +110,12 @@ const logOutAndDeleteToken = (user, statusCode, res) => {
 // Создание токена и отправка ответа
 const sendTokenResponse = (user, statusCode, res) => {
     // создание токена
-    const token = user.getSignedJwtToken()
+    // const token = user.getSignedJwtToken()
+    const token2 = user.getToken()
+    console.log('token2: ', token2)
 
     res.status(statusCode).json({
         success: true,
-        token
+        token2
     })
 }

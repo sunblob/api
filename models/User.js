@@ -2,13 +2,13 @@ const crypto = require('crypto')
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-// const redis = require('redis')
-// const JWTR = require('jwt-redis').default
-// const redisClient = redis.createClient()
-// const jwtr = new JWTR(redisClient)
 
 const UserSchema = mongoose.Schema(
     {
+        token: {
+            type: String,
+            unique: true
+        },
         name: {
             type: String,
             required: [true, 'Введите имя']
@@ -31,10 +31,6 @@ const UserSchema = mongoose.Schema(
         isConfirmed: {
             type: Boolean,
             default: false
-        },
-        loggedIn: {
-            type: Boolean,
-            default: true
         }
     },
     {
@@ -55,6 +51,11 @@ UserSchema.pre('save', async function(next) {
     this.password = await bcrypt.hash(this.password, salt)
     next()
 })
+
+//выдаем токен
+UserSchema.methods.getToken = function() {
+    return this.token
+}
 
 //Получаем jwt token
 UserSchema.methods.getSignedJwtToken = function() {

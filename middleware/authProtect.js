@@ -22,14 +22,12 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
     try {
         // проверка токена
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        // const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-        req.user = await User.findById(decoded.id)
+        // req.user = await User.findById(decoded.id)
+        req.user = await User.findOne({ token })
         console.log(req.user)
 
-        if (req.user.loggedIn !== true) {
-            return next(new ErrorResponse('войдите в приложение еще раз', 401))
-        }
         next()
     } catch (error) {
         return next(
@@ -41,7 +39,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 // разрешить доступ тем кто подтвержден
 exports.authorize = isConfirmed => {
     return (req, res, next) => {
-        if (isConfirmed != req.user.confirmed) {
+        if (isConfirmed != req.user.isConfirmed) {
             return next(
                 new ErrorResponse('вы должны быть подтверждены для доступа')
             )
