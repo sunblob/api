@@ -71,7 +71,7 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
 
 //удалить все точки точки пользователя когда он удаляется
 UserSchema.pre('remove', async function(next) {
-    await this.model('Points').deleteMany({ user: this._id })
+    await this.model('Point').deleteMany({ user: this._id })
     next()
 })
 
