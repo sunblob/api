@@ -97,25 +97,15 @@ exports.currentUser = asyncHandler(async (req, res, next) => {
     })
 })
 
-//Удаление токена и отправка ответа
-const logOutAndDeleteToken = (user, statusCode, res) => {
-    const token = user.deleteJwtToken()
-
-    res.status(statusCode).json({
-        success: true,
-        data: `удален токен ${token}`
-    })
-}
-
 // Создание токена и отправка ответа
 const sendTokenResponse = (user, statusCode, res) => {
     // создание токена
     // const token = user.getSignedJwtToken()
-    const token2 = user.getToken()
-    console.log('token2: ', token2)
+    const token = user.getToken()
+    console.log('token2: ', token)
 
     res.status(statusCode).json({
         success: true,
-        token2
+        token
     })
 }

@@ -58,22 +58,15 @@ UserSchema.methods.getToken = function() {
 }
 
 //Получаем jwt token
-UserSchema.methods.getSignedJwtToken = function() {
-    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE
-    })
-}
+// UserSchema.methods.getSignedJwtToken = function() {
+//     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+//         expiresIn: process.env.JWT_EXPIRE
+//     })
+// }
 
 //сравниваем пароли в бд и то что пришло
 UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password)
-}
-
-// удалить токен (создать такой токен который исчезнет через 2 секунды)
-UserSchema.methods.deleteJwtToken = function() {
-    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_LOGOUT_EXPIRE
-    })
 }
 
 module.exports = mongoose.model('User', UserSchema)
