@@ -69,4 +69,10 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password)
 }
 
+//удалить все точки точки пользователя когда он удаляется
+UserSchema.pre('remove', async function(next) {
+    await this.model('Points').deleteMany({ user: this._id })
+    next()
+})
+
 module.exports = mongoose.model('User', UserSchema)
