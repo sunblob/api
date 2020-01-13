@@ -13,6 +13,10 @@ const mongoSanitize = require('express-mongo-sanitize')
 //для доступа с других доменов
 const cors = require('cors')
 
+//получение текущего ip адреса
+const ip = require('ip')
+console.log('ip', ip.address())
+
 //middleware
 const errorHandler = require('./middleware/error')
 
@@ -58,8 +62,10 @@ app.use(errorHandler)
 
 //Запуск сервера
 const PORT = process.env.PORT || 5000
+const ip_address = ip.address()
 const server = app.listen(
     PORT,
+    ip_address,
     console.log(`Сервер запущен на порту: ${PORT}`.yellow.bold)
 )
 
