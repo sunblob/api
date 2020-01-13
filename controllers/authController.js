@@ -1,8 +1,8 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
 const User = require('../models/User')
-const TokGen = require('tokgen')
-const generator = new TokGen()
+const TokenGenerator = require('uuid-token-generator')
+const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
 
 /*
     @desc       регистарция пользователя
@@ -11,7 +11,7 @@ const generator = new TokGen()
 */
 exports.signUp = asyncHandler(async (req, res, next) => {
     const { name, email, password } = req.body
-    const token = generator.generate()
+    const token = tokgen.generate()
 
     const user = await User.create({
         token,
@@ -30,7 +30,7 @@ exports.signUp = asyncHandler(async (req, res, next) => {
 */
 exports.signIn = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body
-    const token = generator.generate()
+    const token = tokgen.generate()
 
     // проверка почты и пароля
     if (!email || !password) {
@@ -44,7 +44,16 @@ exports.signIn = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Неправильно введенные данные', 401))
     }
 
-    user = await User.findOneAndUpdate({ token, email }).select('+password')
+    // const filter = { email }
+    // const update = { token }
+    user = await User.findOneAndUpdate(
+        { email },
+        { token },
+        {
+            new: true,
+            runValidators: true
+        }
+    ).select('+password')
 
     // проверка если пароли совпадают
     const isMatch = await user.matchPassword(password)
@@ -96,7 +105,7 @@ exports.currentUser = asyncHandler(async (req, res, next) => {
     })
 })
 
-// Создание токена и отправка ответа
+//отправка ответа
 const sendTokenResponse = (user, statusCode, res) => {
     // создание токена
     const token = user.getToken()
