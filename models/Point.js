@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const PointSchema = mongoose.Schema({
     title: {
         type: String,
+        unique: true,
         required: [true, 'Введите название точки']
     },
     description: {

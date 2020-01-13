@@ -9,7 +9,7 @@ const UserSchema = mongoose.Schema(
         },
         name: {
             type: String,
-            required: [true, 'Введите имя']
+            default: ''
         },
         email: {
             type: String,
@@ -26,9 +26,10 @@ const UserSchema = mongoose.Schema(
             minlength: 6,
             select: false
         },
-        isConfirmed: {
-            type: Boolean,
-            default: false
+        role: {
+            type: String,
+            enum: ['admin', 'confirmed', 'unconfirmed'],
+            default: 'unconfirmed'
         }
     },
     {

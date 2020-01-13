@@ -34,11 +34,14 @@ exports.protect = asyncHandler(async (req, res, next) => {
 })
 
 // разрешить доступ тем кто подтвержден
-exports.authorize = isConfirmed => {
+exports.authorize = (...roles) => {
     return (req, res, next) => {
-        if (isConfirmed != req.user.isConfirmed) {
+        if (!roles.includes(req.user.role)) {
             return next(
-                new ErrorResponse('вы должны быть подтверждены для доступа')
+                new ErrorResponse(
+                    `У пользователя с ролью '${req.user.role}' нет прав на использование данного запроса`,
+                    403
+                )
             )
         }
         next()
