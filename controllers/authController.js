@@ -90,8 +90,9 @@ exports.logOut = asyncHandler(async (req, res, next) => {
   )
 
   res.status(200).json({
-    succss: true,
-    data: `loggedOut with id ${user.id}`
+    success: true,
+    message: 'logged out',
+    data: user.id
   })
 })
 
