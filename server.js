@@ -65,7 +65,7 @@ const PORT = process.env.PORT || 5000
 const ip_address = ip.address()
 const server = app.listen(
     PORT,
-    ip_address,
+    // ip_address,
     console.log(`Сервер запущен на порту: ${PORT}`.yellow.bold)
 )
 

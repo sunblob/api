@@ -16,7 +16,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
     }
 
     //Если токен не существует
-    if (!token) {
+    if (!token || token == '') {
         return next(new ErrorResponse('нет доступа к данному роуту', 401))
     }
 

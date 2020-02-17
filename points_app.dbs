@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="PointsApp" id="Project_573f7a2" template="Default" database="MongoDb" >
+	<comment><![CDATA[схема бд для вкр]]></comment>
+	<schema name="PointsApp" >
+		<table name="User" >
+			<comment><![CDATA[схема пользователя]]></comment>
+			<column name="_id" type="string" jt="12" mandatory="y" >
+				<comment><![CDATA[id]]></comment>
+			</column>
+			<column name="login" type="string" jt="12" mandatory="y" >
+				<comment><![CDATA[имя]]></comment>
+			</column>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout_43d749f" show_relation="columns" >
+		<entity schema="PointsApp" name="User" color="FF00FF" x="192" y="144" />
+		<callout x="48" y="48" pointer="Round" >
+			<comment><![CDATA[This project is in offline mode.
+Design the schema and save the design to project file. Later create or upgrade the schema on any database.
+Right-click the layout to add new tables. Drop this callout from its right-click pop-up menu.]]></comment>
+		</callout>
+	</layout>
+</project>
