@@ -68,7 +68,7 @@ exports.signIn = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     status: true,
-    user
+    data: user
   })
   // sendTokenResponse(user, 200, res)
 })

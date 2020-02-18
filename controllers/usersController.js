@@ -11,7 +11,7 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
     const users = await User.find()
 
     res.status(200).json({
-        success: true,
+        status: true,
         count: users.length,
         data: users
     })
@@ -32,7 +32,7 @@ exports.getUser = asyncHandler(async (req, res, next) => {
     }
 
     res.status(200).json({
-        success: true,
+        status: true,
         data: user
     })
 })
@@ -49,7 +49,7 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`нет точки с id ${req.params.id}`, 404))
     }
 
-    if (user._id !== req.user.id) {
+    if (user._id != req.user.id) {
         return next(
             new ErrorResponse(
                 'Вы не имеете прав на изменение информации о другом пользователе',
@@ -61,10 +61,10 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
     user = await User.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true
-    })
+    }).select('+password')
 
     res.status(201).json({
-        success: true,
+        status: true,
         data: user
     })
 })
@@ -84,7 +84,7 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
     user = await User.findByIdAndDelete(req.params.id)
 
     res.status(201).json({
-        success: true,
+        status: true,
         data: user
     })
 })
