@@ -10,8 +10,8 @@ const router = express.Router()
 
 const { protect } = require('../middleware/authProtect')
 
-router.post('/signup', signUp)
-router.post('/signin', signIn)
+router.post('/register', signUp)
+router.post('/login', signIn)
 router.get('/logout', protect, logOut)
 router.get('/me', protect, currentUser)
 

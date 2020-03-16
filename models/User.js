@@ -30,6 +30,10 @@ const UserSchema = mongoose.Schema(
             type: String,
             enum: ['admin', 'confirmed', 'unconfirmed'],
             default: 'unconfirmed'
+        },
+        about: {
+            type: String,
+            default: ''
         }
     },
     {

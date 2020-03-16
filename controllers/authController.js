@@ -22,8 +22,9 @@ exports.signUp = asyncHandler(async (req, res, next) => {
 
   // sendTokenResponse(user, 200, res)
   res.status(200).json({
-    success: true,
-    data: user
+    //success: true, 
+   // data: user
+   user
   })
 })
 
@@ -66,10 +67,13 @@ exports.signIn = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Неправильно введенные данные', 401))
   }
 
-  res.status(200).json({
-    status: true,
-    data: user
-  })
+  //res.status(200).json({
+   // status: true,
+   //data: user
+   //user
+  //})
+  
+  res.status(200).json(user)
   // sendTokenResponse(user, 200, res)
 })
 
@@ -104,10 +108,12 @@ exports.logOut = asyncHandler(async (req, res, next) => {
 exports.currentUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id)
 
-  res.status(200).json({
-    success: true,
-    data: user
-  })
+  //res.status(200).json({
+  //  success: true,
+  //  data: user
+  //})
+  
+  res.status(200).json(user)
 })
 
 //отправка ответа

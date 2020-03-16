@@ -11,11 +11,13 @@ const Point = require('../models/Point')
 exports.getAllPoints = asyncHandler(async (req, res, next) => {
     const points = await Point.find()
 
-    res.status(200).json({
-        success: true,
-        count: points.length,
-        data: points
-    })
+    //res.status(200).json({
+    //    status: true,
+    //    count: points.length,
+    //   data: points
+    //})
+    
+    res.status(200).json(points)
 })
 
 /*
@@ -26,10 +28,11 @@ exports.getAllPoints = asyncHandler(async (req, res, next) => {
 exports.getPoint = asyncHandler(async (req, res, next) => {
     const point = await Point.findById(req.params.id)
 
-    res.status(200).json({
-        success: true,
-        data: point
-    })
+    //res.status(200).json({
+    //    status: true,
+    //    data: point
+    //})
+    res.status(200).json(point)
 })
 
 /*
@@ -40,11 +43,13 @@ exports.getPoint = asyncHandler(async (req, res, next) => {
 exports.getPointsForUser = asyncHandler(async (req, res, next) => {
     const points = await Point.find({ user: req.user.id })
 
-    res.status(200).json({
-        success: true,
-        count: points.length,
-        data: points
-    })
+    //res.status(200).json({
+    //    status: true,
+    //    count: points.length,
+    //    data: points
+    //})
+    
+    res.status(200).json(points)
 })
 
 /*
@@ -58,10 +63,12 @@ exports.createPoint = asyncHandler(async (req, res, next) => {
 
     const point = await Point.create(req.body)
 
-    res.status(201).json({
-        success: true,
-        data: point
-    })
+    //res.status(201).json({
+    //    status: true,
+    //    data: point
+    //})
+    
+    res.status(201).json(point)
 })
 
 /*
@@ -89,10 +96,12 @@ exports.updatePoint = asyncHandler(async (req, res, next) => {
         runValidators: true
     })
 
-    res.status(201).json({
-        success: true,
-        data: point
-    })
+    //res.status(201).json({
+    //    status: true,
+    //    data: point
+    //})
+    
+    res.status(201).json(point)
 })
 
 /*
@@ -117,8 +126,10 @@ exports.deletePoint = asyncHandler(async (req, res, next) => {
 
     point = await Point.findByIdAndDelete(req.params.id)
 
-    res.status(201).json({
-        success: true,
-        data: point
-    })
+    //res.status(201).json({
+    //    status: true,
+    //    data: point
+    //})
+    
+    res.status(201).json(point)
 })

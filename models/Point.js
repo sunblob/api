@@ -13,6 +13,7 @@ const PointSchema = mongoose.Schema({
     },
     hint: {
         type: String,
+        default: '',
         maxLength: [50, 'Подсказка не может быть длиннее 50 символов']
     },
     isActive: {
