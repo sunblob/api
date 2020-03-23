@@ -27,19 +27,24 @@ dotenv.config({ path: './config/config.env' })
 const connectDB = require('./config/db')
 connectDB()
 
+const firebase = require('./config/firebase')
+firebase()
+
 const app = express()
 
 // файлы с путями
-const auth = require('./paths/auth')
-const points = require('./paths/points')
-const users = require('./paths/users')
+const couriers = require('./paths/couriers')
+const reviews = require('./paths/reviews')
+const supervisors = require('./paths/supervisors')
+const products = require('./paths/products')
+// const users = require('./paths/users')
 
 //Body parse - нужен для обработки POST/PUT запросов
 app.use(express.json())
 
 //Логгирование во время разработки
 if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'))
+	app.use(morgan('dev'))
 }
 
 //Защита от NoSql инъекций
@@ -53,10 +58,16 @@ app.use(cors())
 //Установка статического фолдера
 app.use(express.static(path.join(__dirname, 'public')))
 
+const { handshake } = require('./controllers/basicController')
+
+//рукопожатие для всех пользователей
+app.post('/api/handshake', handshake)
 // привязка путей
-app.use('/api/auth', auth)
-app.use('/api/points', points)
-app.use('/api/users', users)
+app.use('/api/couriers', couriers)
+app.use('/api/reviews', reviews)
+app.use('/api/supervisors', supervisors)
+app.use('/api/products', products)
+// app.use('/api/users', users)
 
 app.use(errorHandler)
 
@@ -64,16 +75,16 @@ app.use(errorHandler)
 const PORT = process.env.PORT || 5000
 const ip_address = ip.address()
 const server = app.listen(
-    PORT,
-    // ip_address,
-    console.log(`Сервер запущен на порту: ${PORT}`.yellow.bold)
+	PORT,
+	// ip_address,
+	console.log(`Сервер запущен на порту: ${PORT}`.yellow.bold)
 )
 
 //Если не удается соединиться с бд выключаем сервер
 process.on('unhandledRejection', (err, promise) => {
-    console.log(`Ошибка: ${err.message}`.red)
+	console.log(`Ошибка: ${err.message}`.red)
 
-    server.close(() => {
-        process.exit()
-    })
+	server.close(() => {
+		process.exit()
+	})
 })
