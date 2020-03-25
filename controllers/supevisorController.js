@@ -170,13 +170,13 @@ const codesArray = []
     @access     public
 */
 exports.authWithNumber = asyncHandler(async (req, res, next) => {
-	const { token, phoneNumber } = req.body
+	const { fcmToken, phoneNumber } = req.body
 
 	const code = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1)
 	console.log(code)
 
 	const obj = {
-		token,
+		token: fcmToken,
 		phoneNumber,
 		code
 	}
@@ -184,17 +184,17 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 	codesArray.push(obj)
 	console.log(codesArray)
 
-	// const firebase = require('./../config/firebase')
-	// const message = {
-	// 	notification: {
-	// 		title: 'Ваш код',
-	// 		body: code
-	// 	},
-	// 	token
-	// }
-	// const result = await firebase().messaging().send(message)
-	// console.log(result)
-	res.status(200).json(code)
+  const firebase = require('./../config/firebase')
+  const message = {
+	  notification: {
+	 		title: 'Your code',
+	 		body: code
+	 	},
+	 	token
+  }
+  const result = await firebase().messaging().send(message)
+	 //console.log(result)
+	res.status(200).json({code})
 })
 /*
     @desc       проверка кода
@@ -219,7 +219,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 		let supervisor = await User.findOne({ phoneNumber: obj.phoneNumber })
 
 		if (supervisor) {
-			supervisor = await User.findOneAndUpdate({ phoneNumber }, { token }, { new: true, runValidators: true })
+			supervisor = await User.findOneAndUpdate({ phoneNumber: obj.phoneNumber }, { token }, { new: true, runValidators: true })
 		} else {
 			supervisor = await User.create({
 				token,
