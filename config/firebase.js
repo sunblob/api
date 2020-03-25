@@ -1,11 +1,11 @@
 const admin = require('firebase-admin')
 
-const serviceAccount = require('./diploma-df493-firebase-adminsdk-u8mha-5e8feaed07.json')
+const serviceAccount = require('./coffeepointsapp-firebase-adminsdk-hxjgv-663a2c271a.json')
 
 const firebase = () =>
 	admin.initializeApp({
 		credential: admin.credential.cert(serviceAccount),
-		databaseURL: 'https://diploma-df493.firebaseio.com'
+		databaseURL: "https://coffeepointsapp.firebaseio.com"
 	})
 
 module.exports = firebase

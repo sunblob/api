@@ -6,7 +6,7 @@ const {
 	login,
 	updateCourier,
 	deleteCourier,
-	updateName,
+	toggleActive,
 	authWithNumber,
 	codeCheck
 } = require('../controllers/courierController')
@@ -23,9 +23,10 @@ router.route('/').get(getCouriers)
 router
 	.route('/:id')
 	.get(getCourier)
-	.put(protect, authorize('courier'), authorizeCourier('supervisor'), updateCourier)
-	.put(protect, authorize('courier'), updateName)
+	.put(protect, authorize('supervisor'), updateCourier)
 	.delete(protect, authorize('courier'), deleteCourier)
+ 
+router.route('/:id/active').put(protect, authorize('courier'), authorizeCourier('supervisor'), toggleActive)
 
 router.route('/login').post(login)
 

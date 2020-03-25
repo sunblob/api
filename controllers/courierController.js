@@ -133,9 +133,9 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
 
-	if (courier._id != req.user.id) {
-		return next(new ErrorResponse('Вы не имеете прав на изменение информации о другом пользователе', 400))
-	}
+	//if (courier._id != req.user.id) {
+	//	return next(new ErrorResponse('Вы не имеете прав на изменение информации о другом пользователе', 400))
+	//}
 
 	courier = await User.findByIdAndUpdate(req.params.id, req.body, {
 		new: true,
@@ -150,9 +150,9 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
     @route      PUT /api/couriers/:id
     @access     public
 */
-exports.updateName = asyncHandler(async (req, res, next) => {
+exports.toggleActive = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
-	const { name } = req.body
+	const { isActive } = req.body
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -160,7 +160,7 @@ exports.updateName = asyncHandler(async (req, res, next) => {
 
 	courier = await User.findByIdAndUpdate(
 		req.params.id,
-		{ name },
+		{ isActive },
 		{
 			new: true,
 			runValidators: true
