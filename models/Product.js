@@ -5,7 +5,7 @@ const ProductSchema = mongoose.Schema(
 	{
 		type: {
 			type: String,
-			enum: [ 'Кофе', 'Мороженое', 'Другое' ],
+			enum: [ 'Кофе', 'Мороженое', 'Блинчики', 'Другое' ],
 			required: true
 		},
 		name: {
@@ -14,10 +14,10 @@ const ProductSchema = mongoose.Schema(
 		},
 		amount: {
 			type: Number,
-			min: 1,
-			required: true
+			min: 1
+			// required: true
 		},
-		courier: {
+		supervisor: {
 			type: mongoose.Schema.ObjectId,
 			ref: 'User',
 			required: true

@@ -45,8 +45,8 @@ exports.authorize = (...roles) => {
 
 exports.authorizeCourier = (prop) => {
 	return (req, res, next) => {
-		const { boss } = req.user
-		if (!boss) {
+		const { supervisor } = req.user
+		if (supervisor == null) {
 			return next(new ErrorResponse(`У курьера нет прав на выполение действий без руководства`, 403))
 		}
 

@@ -1,8 +1,11 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
 const User = require('../models/User')
+const Code = require('./../models/Code')
+
 const TokenGenerator = require('uuid-token-generator')
 const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
+const admin = require('firebase-admin')
 
 /*
     @desc       регистрация босса
@@ -162,8 +165,6 @@ exports.deleteSupervisor = asyncHandler(async (req, res, next) => {
 	res.status(200).json(supervisor)
 })
 
-const codesArray = []
-
 /*
     @desc       Номер телефона
     @route      POST /api/supervisors/auth
@@ -172,29 +173,30 @@ const codesArray = []
 exports.authWithNumber = asyncHandler(async (req, res, next) => {
 	const { fcmToken, phoneNumber } = req.body
 
-	const code = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1)
-	console.log(code)
+	const generatedCode = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1)
 
-	const obj = {
-		token: fcmToken,
-		phoneNumber,
-		code
+	let code = await Code.findOne({ phoneNumber })
+
+	if (!code) {
+		code = await Code.create({
+			phoneNumber,
+			fcmToken,
+			code: generatedCode
+		})
+	} else {
+		code = await Code.findOneAndUpdate({ phoneNumber }, { code: generatedCode }, { runValidators: true, new: true })
 	}
 
-	codesArray.push(obj)
-	console.log(codesArray)
-
-  const firebase = require('./../config/firebase')
-  const message = {
-	  notification: {
-	 		title: 'Your code',
-	 		body: code
-	 	},
-	 	token
-  }
-  const result = await firebase().messaging().send(message)
-	 //console.log(result)
-	res.status(200).json({code})
+	const message = {
+		notification: {
+			title: 'Your code',
+			body: generatedCode
+		},
+		token: fcmToken
+	}
+	const result = await admin.messaging().send(message)
+	console.log(result)
+	res.status(200).json({ res: generatedCode })
 })
 /*
     @desc       проверка кода
@@ -204,9 +206,7 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 exports.codeCheck = asyncHandler(async (req, res, next) => {
 	const { code, fcmToken } = req.body
 
-	console.log(codesArray)
-	const obj = codesArray.find((item) => item.token == fcmToken)
-	console.log(obj)
+	let obj = await Code.findOne({ fcmToken })
 	const token = tokgen.generate()
 
 	if (!obj) {
@@ -219,17 +219,24 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 		let supervisor = await User.findOne({ phoneNumber: obj.phoneNumber })
 
 		if (supervisor) {
-			supervisor = await User.findOneAndUpdate({ phoneNumber: obj.phoneNumber }, { token }, { new: true, runValidators: true })
+			supervisor = await User.findOneAndUpdate(
+				{ phoneNumber: obj.phoneNumber },
+				{ token },
+				{ new: true, runValidators: true }
+			)
+			obj = await Code.findOneAndUpdate({ fcmToken }, { resolved: true }, { new: true, runValidators: true })
 		} else {
 			supervisor = await User.create({
 				token,
 				phoneNumber: obj.phoneNumber,
 				role: 'supervisor',
-				supervisorStatus: 'disabled'
+				supervisorStatus: 'disabled',
+				avgRating: null
 			})
+			obj = await Code.findOneAndUpdate({ fcmToken }, { resolved: true }, { new: true, runValidators: true })
 		}
 
-		console.log(codesArray)
+		await Code.deleteMany({ resolved: true })
 
 		res.status(200).json(supervisor)
 		return

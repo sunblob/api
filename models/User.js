@@ -12,18 +12,12 @@ const UserSchema = mongoose.Schema(
 		},
 		phoneNumber: {
 			type: String,
-			match: [ /^((\+7|7|8)+([0-9]){10})$/, 'Введите валидный номер телефона' ]
-			// required: [ true, 'Введите номер телефона' ],
-		},
-		password: {
-			type: String,
-			minlegth: [ 6, 'Минимальная длина пароля 6 символов' ]
-			// required: [ true, 'Введите пароль' ]
+			match: [ /^((\+7|7|8)+([0-9]){10})$/, 'Введите валидный номер телефона' ],
+			unique: true
 		},
 		deviceId: {
 			type: String,
-			// required: true,
-			unique: true
+			required: false
 		},
 		city: {
 			type: mongoose.Schema.ObjectId,
@@ -31,11 +25,12 @@ const UserSchema = mongoose.Schema(
 		},
 		isActive: {
 			type: Boolean
-			// default: false
 		},
 		isCurrentlyNotHere: {
 			type: Boolean
-			// default: false
+		},
+		hint: {
+			type: String
 		},
 		avgRating: {
 			type: Number,

@@ -13,10 +13,12 @@ const {
 
 const router = express.Router()
 const reviewRouter = require('./reviews')
+const productRouter = require('./products')
 
 const { protect, authorize, authorizeSupervisor } = require('../middleware/authProtect')
 
 router.use('/:id/reviews', protect, authorize('courier'), reviewRouter)
+router.use('/:id/products', protect, authorize('courier'), productRouter)
 
 router.route('/').get(getSupervisors)
 

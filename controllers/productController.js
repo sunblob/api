@@ -9,14 +9,13 @@ const User = require('./../models/User')
     @access     private
 */
 exports.addProduct = asyncHandler(async (req, res, next) => {
-	const { type, name, amount } = req.body
-	const courier = req.user._id
+	const { type, name } = req.body
+	const supervisor = req.user._id
 
 	const product = await Product.create({
 		type,
 		name,
-		amount,
-		courier
+		supervisor
 	})
 
 	res.status(201).json(product)
@@ -35,7 +34,7 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 	}
 
 	if (product.courier.toString() !== req.user.id) {
-		return next(new ErrorResponse(`Курьер с id ${req.user.id} не имеет прав на редактирование этого продукта`, 401))
+		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на редактирование этого продукта`, 401))
 	}
 
 	product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
@@ -57,7 +56,7 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
 
 	//удалять товар может только его создатель
 	if (product.courier.toString() !== req.user.id) {
-		return next(new ErrorResponse(`Курьер с id ${req.user.id} не имеет прав на удаление этого продукта`, 401))
+		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на удаление этого продукта`, 401))
 	}
 
 	product = await Product.findByIdAndDelete(req.params.id)
@@ -82,12 +81,12 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       получение списка своих товаров
-    @route      GET /api/couriers/:courierId/products
+    @route      GET /api/supervisor/:supervisorId/products
     @access     public
 */
 exports.getProducts = asyncHandler(async (req, res, next) => {
-	console.log(req.params.courierId)
-	const products = await Product.find().where({ courier: req.params.courierId })
+	console.log(req.params.id)
+	const products = await Product.find().where({ supervisor: req.params.id })
 
 	res.status(200).json(products)
 })

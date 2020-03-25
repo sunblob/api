@@ -37,7 +37,7 @@ const couriers = require('./paths/couriers')
 const reviews = require('./paths/reviews')
 const supervisors = require('./paths/supervisors')
 const products = require('./paths/products')
-// const users = require('./paths/users')
+const users = require('./paths/users')
 
 //Body parse - нужен для обработки POST/PUT запросов
 app.use(express.json())
@@ -58,16 +58,16 @@ app.use(cors())
 //Установка статического фолдера
 app.use(express.static(path.join(__dirname, 'public')))
 
-const { handshake } = require('./controllers/basicController')
+// const { handshake } = require('./controllers/basicController')
 
 //рукопожатие для всех пользователей
-app.post('/api/handshake', handshake)
+// app.post('/api/handshake', handshake)
 // привязка путей
 app.use('/api/couriers', couriers)
 app.use('/api/reviews', reviews)
 app.use('/api/supervisors', supervisors)
 app.use('/api/products', products)
-// app.use('/api/users', users)
+app.use('/api/users', users)
 
 app.use(errorHandler)
 

@@ -1,8 +1,11 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
-const User = require('../models/User')
+const User = require('./../models/User')
+const Code = require('./../models/Code')
+
 const TokenGenerator = require('uuid-token-generator')
 const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
+const admin = require('firebase-admin')
 
 /*
     @desc       регистрация курьера
@@ -10,7 +13,7 @@ const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
     @access     public
 */
 exports.register = asyncHandler(async (req, res, next) => {
-	const { deviceId, phoneNumber, password } = req.body
+	const { deviceId, phoneNumber } = req.body
 	const token = tokgen.generate()
 
 	let user = await User.findOne({ deviceId })
@@ -20,7 +23,6 @@ exports.register = asyncHandler(async (req, res, next) => {
 			{ deviceId },
 			{
 				phoneNumber,
-				password,
 				isActive: false,
 				isCurrentlyNotHere: false,
 				role: 'courier'
@@ -31,7 +33,6 @@ exports.register = asyncHandler(async (req, res, next) => {
 		user = await User.create({
 			token,
 			phoneNumber,
-			password,
 			deviceId,
 			isActive: false,
 			isCurrentlyNotHere: false,
@@ -194,34 +195,39 @@ const codesArray = []
     @access     public
 */
 exports.authWithNumber = asyncHandler(async (req, res, next) => {
-	const { token, phoneNumber } = req.body
+	const { fcmToken, phoneNumber } = req.body
 
-	const code = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+	const generatedCode = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1)
 
-	const obj = {
-		token,
-		phoneNumber,
-		code
+	let code = await Code.findOne({ phoneNumber })
+
+	if (!code) {
+		code = await Code.create({
+			phoneNumber,
+			fcmToken,
+			code: generatedCode
+		})
+	} else {
+		code = await Code.findOneAndUpdate({ phoneNumber }, { code: generatedCode }, { runValidators: true, new: true })
 	}
 
-	codesArray.push(obj)
-
-	const firebase = require('./../config/firebase')
 	const message = {
 		notification: {
-			title: 'Ваш код',
-			body: code
+			title: 'Your code',
+			body: generatedCode
 		},
-		token
+		token: fcmToken
 	}
-	const result = await firebase().messaging().send(message)
+	const result = await admin.messaging().send(message)
 	console.log(result)
+	res.status(200).json({ res: generatedCode })
 })
 
-exports.checkCode = asyncHandler(async (req, res, next) => {
-	const { code, token } = req.body
+exports.codeCheck = asyncHandler(async (req, res, next) => {
+	const { code, fcmToken } = req.body
 
-	const obj = codesArray.find(item => item.token == token)
+	let obj = await Code.findOne({ fcmToken })
+	const token = tokgen.generate()
 
 	if (!obj) {
 		return next(new ErrorResponse('Что-то пошло не так', 400))
@@ -230,8 +236,35 @@ exports.checkCode = asyncHandler(async (req, res, next) => {
 	if (obj.code !== code) {
 		return next(new ErrorResponse('Неправильный код', 400))
 	} else {
-		// const courier = await User.create({
+		let courier = await User.findOne({ phoneNumber: obj.phoneNumber })
 
-		// })
+		if (courier) {
+			courier = await User.findOneAndUpdate(
+				{ phoneNumber: obj.phoneNumber },
+				{ token },
+				{ new: true, runValidators: true }
+			)
+			obj = await Code.findOneAndUpdate({ fcmToken }, { resolved: true }, { new: true, runValidators: true })
+		} else {
+			courier = await User.create({
+				token,
+				phoneNumber: obj.phoneNumber,
+				role: 'courier',
+				isActive: false,
+				isCurrentlyNotHere: false,
+				supervisor: null,
+				avgRating: null,
+				coordinates: {
+					lng: 37.61556,
+					lat: 55.75222
+				}
+			})
+			obj = await Code.findOneAndUpdate({ fcmToken }, { resolved: true }, { new: true, runValidators: true })
+		}
+
+		await Code.deleteMany({ resolved: true })
+
+		res.status(200).json(courier)
+		return
 	}
 })
