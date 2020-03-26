@@ -223,13 +223,13 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 	}
 	const result = await admin.messaging().send(message)
 	console.log(result)
-	res.status(200).json({ res: generatedCode })
+	res.status(200).json({ res: generatedCode, codeId: code._id })
 })
 
 exports.codeCheck = asyncHandler(async (req, res, next) => {
-	const { code, fcmToken } = req.body
+	const { code, codeId } = req.body
 
-	let obj = await Code.findOne({ fcmToken })
+	let obj = await Code.findById(codeId)
 	const token = tokgen.generate()
 
 	if (!obj) {
@@ -247,7 +247,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 				{ token },
 				{ new: true, runValidators: true }
 			)
-			obj = await Code.findOneAndUpdate({ fcmToken }, { resolved: true }, { new: true, runValidators: true })
+			obj = await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		} else {
 			courier = await User.create({
 				token,
@@ -262,7 +262,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 					lat: 55.75222
 				}
 			})
-			obj = await Code.findOneAndUpdate({ fcmToken }, { resolved: true }, { new: true, runValidators: true })
+			obj = await Code.findById(codeId, { resolved: true }, { new: true, runValidators: true })
 		}
 
 		await Code.deleteMany({ resolved: true })
