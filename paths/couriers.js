@@ -6,7 +6,7 @@ const {
 	login,
 	updateCourier,
 	deleteCourier,
-	toggleActive,
+	updateSelf,
 	authWithNumber,
 	codeCheck
 } = require('../controllers/courierController')
@@ -26,7 +26,7 @@ router
 	.put(protect, authorize('supervisor'), updateCourier)
 	.delete(protect, authorize('courier'), deleteCourier)
  
-router.route('/:id/active').put(protect, authorize('courier'), authorizeCourier('supervisor'), toggleActive)
+router.route('/:id/self').put(protect, authorize('courier'), authorizeCourier('supervisor'), updateSelf)
 
 router.route('/login').post(login)
 

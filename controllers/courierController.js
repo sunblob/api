@@ -150,9 +150,9 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
     @route      PUT /api/couriers/:id
     @access     public
 */
-exports.toggleActive = asyncHandler(async (req, res, next) => {
+exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
-	const { isActive } = req.body
+	const { isActive, coordinates } = req.body
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -160,7 +160,10 @@ exports.toggleActive = asyncHandler(async (req, res, next) => {
 
 	courier = await User.findByIdAndUpdate(
 		req.params.id,
-		{ isActive },
+		{
+			isActive,
+			coordinates
+		},
 		{
 			new: true,
 			runValidators: true
