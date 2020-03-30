@@ -18,16 +18,15 @@ const productRouter = require('./products')
 const { protect, authorize, authorizeSupervisor } = require('../middleware/authProtect')
 
 router.use('/:id/reviews', protect, authorize('courier'), reviewRouter)
-router.use('/:id/products', protect, authorize('courier'), productRouter)
+router.use('/:id/products', protect, authorize('courier', 'supervisor'), productRouter)
 
 router.route('/').get(getSupervisors)
 
 router
 	.route('/:id')
 	.get(getSupervisor)
-	.put(protect, authorize('supervisor'), authorizeSupervisor('standard', 'premium'), updateSupervisor)
-	.put(protect, authorize('supervisor'), updateName)
-	.delete(protect, authorize('supervisor'), authorizeSupervisor('standard', 'premium'), deleteSupervisor)
+	.put(protect, authorize('supervisor'), updateSupervisor)
+	.delete(protect, authorize('supervisor'), deleteSupervisor)
 
 router.route('/login').post(login)
 

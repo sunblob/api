@@ -33,7 +33,7 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Товара с id ${req.params.id} не сущетвует`, 404))
 	}
 
-	if (product.courier.toString() !== req.user.id) {
+	if (product.supervisor.toString() !== req.user.id) {
 		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на редактирование этого продукта`, 401))
 	}
 
@@ -55,7 +55,7 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
 	}
 
 	//удалять товар может только его создатель
-	if (product.courier.toString() !== req.user.id) {
+	if (product.supervisor.toString() !== req.user.id) {
 		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на удаление этого продукта`, 401))
 	}
 

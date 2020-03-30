@@ -109,11 +109,11 @@ exports.updateSupervisor = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse('Вы не имеете прав на изменение информации о другом пользователе', 400))
 	}
 
-	const { name, password } = req.body
+	const { name } = req.body
 
 	supervisor = await User.findByIdAndUpdate(
 		req.params.id,
-		{ name, password },
+		{ name },
 		{
 			new: true,
 			runValidators: true
@@ -196,7 +196,7 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 	}
 	const result = await admin.messaging().send(message)
 	console.log(result)
-	res.status(200).json({ res: generatedCode })
+	res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 /*
     @desc       проверка кода

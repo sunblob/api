@@ -190,7 +190,6 @@ exports.deleteCourier = asyncHandler(async (req, res, next) => {
 	res.status(200).json(courier)
 })
 
-const codesArray = []
 
 /*
     @desc       Номер телефона
@@ -223,7 +222,7 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 	}
 	const result = await admin.messaging().send(message)
 	console.log(result)
-	res.status(200).json({ res: generatedCode, codeId: code._id })
+	res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 
 exports.codeCheck = asyncHandler(async (req, res, next) => {

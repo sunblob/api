@@ -16,7 +16,7 @@ router.route('/').get(getProducts).post(protect, authorize('supervisor'), addPro
 router
 	.route('/:id')
 	.get(getProduct)
-	.put(protect, authorize('courier'), updateProduct)
-	.delete(protect, authorize('courier'), deleteProduct)
+	.put(protect, authorize('supervisor'), updateProduct)
+	.delete(protect, authorize('supervisor'), deleteProduct)
 
 module.exports = router
