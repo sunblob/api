@@ -181,8 +181,15 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.updateSelf = asyncHandler(async (req, res, next) => {
-	let courier = await User.findById(req.params.id)
-	const { isActive, coordinates, isCurrentlyNotHere, supervisor } = req.body
+	let courier = await User.findById(req.user._id)
+	// const { isActive, coordinates, isCurrentlyNotHere, supervisor } = req.body
+	delete req.body._id
+	delete req.body.role
+	delete req.body.token
+	delete req.body.phoneNumber	
+	delete req.body.avgRating		
+	const update = req.body
+	console.log(update)
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -190,12 +197,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 
 	courier = await User.findByIdAndUpdate(
 		req.params.id,
-		{
-			isActive,
-			isCurrentlyNotHere,
-			coordinates,
-			supervisor
-		},
+		update,
 		{
 			new: true,
 			runValidators: true

@@ -28,7 +28,7 @@ router
 	.put(protect, authorize('supervisor'), updateCourier)
 	.delete(protect, authorize('courier'), deleteCourier)
  
-router.route('/:id/self').put(protect, authorize('courier'), authorizeCourier('supervisor'), updateSelf)
+router.route('/updateself').put(protect, authorize('courier'), authorizeCourier, updateSelf)
 
 router.route('/login').post(login)
 

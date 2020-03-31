@@ -20,7 +20,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 	try {
 		// проверка токена
 		req.user = await User.findOne({ token })
-		// console.log(req.user)
+		console.log(req.user)
 
 		next()
 	} catch (error) {
@@ -31,6 +31,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 // разрешить доступ тем кто подтвержден
 exports.authorize = (...roles) => {
 	return (req, res, next) => {
+		console.log("role: ", req.user.role, "bool: ", roles.includes(req.user.role), roles)
 		if (!roles.includes(req.user.role)) {
 			return next(
 				new ErrorResponse(
@@ -46,7 +47,8 @@ exports.authorize = (...roles) => {
 exports.authorizeCourier = () => {
 	return (req, res, next) => {
 		const { supervisor } = req.user
-		if (supervisor == null) {
+		console.log("super", supervisor)
+		if (supervisor === null) {
 			return next(new ErrorResponse(`У курьера нет прав на выполение действий без руководства`, 403))
 		}
 
