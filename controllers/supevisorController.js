@@ -194,8 +194,8 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 		},
 		token: fcmToken
 	}
-	const result = await admin.messaging().send(message)
-	console.log(result)
+	// const result = await admin.messaging().send(message)
+	// console.log(result)
 	res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 /*

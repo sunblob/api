@@ -81,11 +81,41 @@ exports.login = asyncHandler(async (req, res, next) => {
 })
 
 /*
-    @desc       получение списка курьеров
+    @desc       получение списка активных/неактивных курьеров
     @route      GET /api/couriers
     @access     public
 */
 exports.getCouriers = asyncHandler(async (req, res, next) => {
+	let active = true
+	if (req.query.active) {
+		active = JSON.parse(req.query.active)
+	}
+	if (req.query.box) {
+		const box = req.query.box.split(',')
+		const lowerLeft = box.slice(0, 2)
+		const upperRight = box.slice(2)
+
+		// const couriers = await Courier.find().where('coordinates').within().box(lowerLeft, upperRight)
+		const couriers = await User.find()
+			.where({ role: 'courier', isActive: active })
+			.where('coordinates')
+			.within()
+			.box(lowerLeft, upperRight)
+		res.status(200).json(couriers)
+		return
+	}
+
+	const couriers = await User.find().where({ role: 'courier', isActive: active }).populate('productList')
+
+	res.status(200).json(couriers)
+})
+
+/*
+    @desc       получение списка всех курьеров
+    @route      GET /api/couriers
+    @access     public
+*/
+exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 	if (req.query.box) {
 		const box = req.query.box.split(',')
 		const lowerLeft = box.slice(0, 2)
@@ -101,7 +131,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
 		return
 	}
 
-	const couriers = await User.find().where({ role: 'courier' })
+	const couriers = await User.find().where({ role: 'courier' }).populate('productList')
 
 	res.status(200).json(couriers)
 })
@@ -112,7 +142,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.getCourier = asyncHandler(async (req, res, next) => {
-	const courier = await User.findById(req.params.id)
+	const courier = await User.findById(req.params.id).populate('productList')
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -140,7 +170,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 	courier = await User.findByIdAndUpdate(req.params.id, req.body, {
 		new: true,
 		runValidators: true
-	})
+	}).populate('productList')
 
 	res.status(200).json(courier)
 })
@@ -168,7 +198,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 			new: true,
 			runValidators: true
 		}
-	)
+	).populate('productList')
 
 	res.status(200).json(courier)
 })
@@ -189,7 +219,6 @@ exports.deleteCourier = asyncHandler(async (req, res, next) => {
 
 	res.status(200).json(courier)
 })
-
 
 /*
     @desc       Номер телефона
@@ -220,8 +249,8 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 		},
 		token: fcmToken
 	}
-	const result = await admin.messaging().send(message)
-	console.log(result)
+	// const result = await admin.messaging().send(message)
+	// console.log(result)
 	res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 
@@ -245,7 +274,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 				{ phoneNumber: obj.phoneNumber },
 				{ token },
 				{ new: true, runValidators: true }
-			)
+			).populate('productList')
 			obj = await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		} else {
 			courier = await User.create({
@@ -256,6 +285,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 				isCurrentlyNotHere: false,
 				supervisor: null,
 				avgRating: null,
+				productList: [],
 				coordinates: {
 					lng: 37.61556,
 					lat: 55.75222

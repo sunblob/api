@@ -85,8 +85,35 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.getProducts = asyncHandler(async (req, res, next) => {
-	console.log(req.params.id)
 	const products = await Product.find().where({ supervisor: req.params.id })
 
 	res.status(200).json(products)
 })
+
+/*
+    @desc       добавление товара курьером к себе в список
+    @route      POST /api/products/:id/togglelist
+    @access     private
+*/
+exports.toggleProductInList = asyncHandler(async (req, res, next) => {
+	const product = await Product.findById(req.params.id)
+	let courier = await User.findById(req.user._id)
+
+	if (product.supervisor.toString() !== courier.supervisor.toString()) {
+		return next(new ErrorResponse('Этот продукт не принадлежит вашему боссу', 401))
+	}
+
+	if (courier.productList.includes(req.params.id)) {
+		courier.productList.pull(req.params.id)
+	} else {
+		courier.productList.addToSet(product._id)
+	}
+
+	await courier.save()
+
+	courier = await User.findById(req.user._id).populate('productList')
+
+	res.status(200).json(courier)
+})
+
+

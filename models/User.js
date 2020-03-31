@@ -57,6 +57,13 @@ const UserSchema = mongoose.Schema(
 		supervisorStatus: {
 			type: String,
 			enum: [ 'disabled', 'standard', 'premium' ]
+		},
+		productList: {
+			type: [ {
+				type: mongoose.Schema.ObjectId,
+				ref: 'Product'
+			} ],
+			default: undefined
 		}
 	},
 	{

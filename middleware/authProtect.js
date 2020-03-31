@@ -9,7 +9,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
 	if (req.headers.authorization) {
 		token = req.headers.authorization
-		console.log('token', token)
+		// console.log('token', token)
 	}
 
 	//Если токен не существует
@@ -20,7 +20,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 	try {
 		// проверка токена
 		req.user = await User.findOne({ token })
-		console.log(req.user)
+		// console.log(req.user)
 
 		next()
 	} catch (error) {
@@ -43,7 +43,7 @@ exports.authorize = (...roles) => {
 	}
 }
 
-exports.authorizeCourier = (prop) => {
+exports.authorizeCourier = () => {
 	return (req, res, next) => {
 		const { supervisor } = req.user
 		if (supervisor == null) {
