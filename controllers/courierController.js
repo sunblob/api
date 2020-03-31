@@ -182,7 +182,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 */
 exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
-	const { isActive, coordinates } = req.body
+	const { isActive, coordinates, isCurrentlyNotHere } = req.body
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -192,6 +192,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 		req.params.id,
 		{
 			isActive,
+      isCurrentlyNotHere,
 			coordinates
 		},
 		{
@@ -249,8 +250,8 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 		},
 		token: fcmToken
 	}
-	// const result = await admin.messaging().send(message)
-	// console.log(result)
+	const result = await admin.messaging().send(message)
+	console.log(result)
 	res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 
