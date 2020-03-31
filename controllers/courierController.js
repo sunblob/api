@@ -177,11 +177,12 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       обновление полей курьера
-    @route      PUT /api/couriers/:id
-    @access     public
+    @route      PUT /api/couriers/:id/updateself
+    @access     private
 */
 exports.updateSelf = asyncHandler(async (req, res, next) => {
-	let courier = await User.findById(req.user._id)
+	let courier = await User.findById(req.params.id)
+ 
 	// const { isActive, coordinates, isCurrentlyNotHere, supervisor } = req.body
 	delete req.body._id
 	delete req.body.role
@@ -194,6 +195,11 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
+ 
+  if (req.params.id != req.user._id) {
+  console.log('param: ', req.params.id, 'req.user: ', req.user._id)
+    return next(new ErrorResponse('u cant change the info about other user', 403))
+  }
 
 	courier = await User.findByIdAndUpdate(
 		req.params.id,
