@@ -112,7 +112,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       получение списка всех курьеров
-    @route      GET /api/couriers
+    @route      GET /api/couriers/all
     @access     public
 */
 exports.getAllCouriers = asyncHandler(async (req, res, next) => {
@@ -132,6 +132,17 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 	}
 
 	const couriers = await User.find().where({ role: 'courier' }).populate('productList')
+
+	res.status(200).json(couriers)
+})
+
+/*
+    @desc       получение списка курьеров босса
+    @route      GET /api/couriers/my
+    @access     private
+*/
+exports.getMyCouriers = asyncHandler(async (req, res, next) => {
+	const couriers = await User.find().where({ role: 'courier', supervisor: req.user._id }).populate('productList')
 
 	res.status(200).json(couriers)
 })
@@ -177,7 +188,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       обновление полей курьера
-    @route      PUT /api/couriers/:id/updateself
+    @route      PUT /api/couriers/:id/self
     @access     private
 */
 exports.updateSelf = asyncHandler(async (req, res, next) => {

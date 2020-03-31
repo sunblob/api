@@ -1,6 +1,7 @@
 const express = require('express')
 const {
 	getAllCouriers,
+	getMyCouriers,
 	getCouriers,
 	getCourier,
 	register,
@@ -21,6 +22,7 @@ router.use('/:id/reviews', protect, authorize('user'), reviewRouter)
 
 router.route('/').get(getCouriers)
 router.route('/all').get(getAllCouriers)
+router.route('/my').get(protect, authorize('supervisor'), getMyCouriers)
 
 router
 	.route('/:id')
