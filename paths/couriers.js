@@ -20,7 +20,7 @@ const { protect, authorize, authorizeCourier } = require('../middleware/authProt
 router.use('/:id/reviews', protect, authorize('user'), reviewRouter)
 
 router.route('/').get(getCouriers)
-router.route('/couriers/all').get(getAllCouriers)
+router.route('/all').get(getAllCouriers)
 
 router
 	.route('/:id')
