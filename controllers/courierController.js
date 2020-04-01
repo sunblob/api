@@ -105,10 +105,14 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 
 	const { name, supervisor } = req.body
 
-	courier = await User.findByIdAndUpdate(req.params.id, { name, supervisor }, {
-		new: true,
-		runValidators: true
-	}).populate('productList')
+	courier = await User.findByIdAndUpdate(
+		req.params.id,
+		{ name, supervisor },
+		{
+			new: true,
+			runValidators: true
+		}
+	).populate('productList')
 
 	res.status(200).json(courier)
 })
@@ -121,13 +125,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
 
-	delete req.body._id
-	delete req.body.role
-	delete req.body.token
-	delete req.body.phoneNumber
-	delete req.body.avgRating
-
-	const update = req.body
+	const { name, isActive, isCurrentlyNotHere, coordinates } = req.body
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -138,10 +136,19 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse('u cant change the info about other user', 403))
 	}
 
-	courier = await User.findByIdAndUpdate(req.params.id, update, {
-		new: true,
-		runValidators: true
-	}).populate('productList')
+	courier = await User.findByIdAndUpdate(
+		req.params.id,
+		{
+			name,
+			isActive,
+			isCurrentlyNotHere,
+			coordinates
+		},
+		{
+			new: true,
+			runValidators: true
+		}
+	).populate('productList')
 
 	res.status(200).json(courier)
 })
