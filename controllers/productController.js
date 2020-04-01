@@ -111,7 +111,7 @@ exports.toggleProductInList = asyncHandler(async (req, res, next) => {
 
 	await courier.save()
 
-	courier = await User.findById(req.user._id).populate('productList').populate('supervisor', 'name')
+	courier = await User.findById(req.user._id).populate('productList')
 
 	res.status(200).json(courier)
 })
