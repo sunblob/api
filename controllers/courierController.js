@@ -94,7 +94,7 @@ exports.getCourier = asyncHandler(async (req, res, next) => {
 /*
     @desc       обновление полей курьера
     @route      PUT /api/couriers/:id
-    @access     public
+    @access     private
 */
 exports.updateCourier = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
@@ -103,7 +103,9 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
 
-	courier = await User.findByIdAndUpdate(req.params.id, req.body, {
+	const { name, supervisor } = req.body
+
+	courier = await User.findByIdAndUpdate(req.params.id, { name, supervisor }, {
 		new: true,
 		runValidators: true
 	}).populate('productList')
