@@ -8,79 +8,6 @@ const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
 const admin = require('firebase-admin')
 
 /*
-    @desc       регистрация курьера
-    @route      POST /api/couriers/register
-    @access     public
-*/
-exports.register = asyncHandler(async (req, res, next) => {
-	const { deviceId, phoneNumber } = req.body
-	const token = tokgen.generate()
-
-	let user = await User.findOne({ deviceId })
-
-	if (user) {
-		user = await User.findOneAndUpdate(
-			{ deviceId },
-			{
-				phoneNumber,
-				isActive: false,
-				isCurrentlyNotHere: false,
-				role: 'courier'
-			},
-			{ new: true, runValidators: true }
-		)
-	} else {
-		user = await User.create({
-			token,
-			phoneNumber,
-			deviceId,
-			isActive: false,
-			isCurrentlyNotHere: false,
-			role: 'courier'
-		})
-	}
-
-	res.status(200).json(user)
-})
-
-/*
-    @desc       вход курьера
-    @route      POST /api/couriers/login
-    @access     public
-*/
-exports.login = asyncHandler(async (req, res, next) => {
-	// 	const { phoneNumber, password } = req.body
-	// 	const token = tokgen.generate()
-
-	// 	if (!phoneNumber || !password) {
-	// 		return next(new ErrorResponse('Введите номер и пароль', 400))
-	// 	}
-
-	// 	let user = await User.findOne({ phoneNumber })
-
-	// 	if (!user) {
-	// 		return next(new ErrorResponse('Пользователя с таким номером телефона не существует', 400))
-	// 	}
-
-	// 	user = await User.findOneAndUpdate({ phoneNumber }, { token }, { new: true, runValidators: true })
-
-	// res.status(200).json(user)
-
-	const { token } = req.body
-
-	const admin = require('firebase-admin')
-	const message = {
-		notification: {
-			title: 'Ваш код',
-			body: '1488'
-		},
-		token
-	}
-	const result = await admin.messaging().send(message)
-	console.log(result)
-})
-
-/*
     @desc       получение списка активных/неактивных курьеров
     @route      GET /api/couriers
     @access     public
@@ -95,7 +22,6 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
 		const lowerLeft = box.slice(0, 2)
 		const upperRight = box.slice(2)
 
-		// const couriers = await Courier.find().where('coordinates').within().box(lowerLeft, upperRight)
 		const couriers = await User.find()
 			.where({ role: 'courier', isActive: active })
 			.where('coordinates')
@@ -121,7 +47,6 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 		const lowerLeft = box.slice(0, 2)
 		const upperRight = box.slice(2)
 
-		// const couriers = await Courier.find().where('coordinates').within().box(lowerLeft, upperRight)
 		const couriers = await User.find()
 			.where({ role: 'courier' })
 			.where('coordinates')
@@ -174,10 +99,6 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
 
-	//if (courier._id != req.user.id) {
-	//	return next(new ErrorResponse('Вы не имеете прав на изменение информации о другом пользователе', 400))
-	//}
-
 	courier = await User.findByIdAndUpdate(req.params.id, req.body, {
 		new: true,
 		runValidators: true
@@ -193,33 +114,48 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 */
 exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
- 
-	// const { isActive, coordinates, isCurrentlyNotHere, supervisor } = req.body
+
 	delete req.body._id
 	delete req.body.role
 	delete req.body.token
-	delete req.body.phoneNumber	
-	delete req.body.avgRating		
+	delete req.body.phoneNumber
+	delete req.body.avgRating
+
 	const update = req.body
-	console.log(update)
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
- 
-  if (req.params.id != req.user._id) {
-  console.log('param: ', req.params.id, 'req.user: ', req.user._id)
-    return next(new ErrorResponse('u cant change the info about other user', 403))
-  }
 
-	courier = await User.findByIdAndUpdate(
-		req.params.id,
-		update,
-		{
-			new: true,
-			runValidators: true
-		}
-	).populate('productList')
+	if (req.params.id != req.user._id) {
+		console.log('param: ', req.params.id, 'req.user: ', req.user._id)
+		return next(new ErrorResponse('u cant change the info about other user', 403))
+	}
+
+	courier = await User.findByIdAndUpdate(req.params.id, update, {
+		new: true,
+		runValidators: true
+	}).populate('productList')
+
+	res.status(200).json(courier)
+})
+
+/*
+    @desc       обновление полей курьера
+    @route      PUT /api/couriers/addsupervisor
+    @access     private
+*/
+exports.addSupervisor = asyncHandler(async (req, res, next) => {
+	let courier = await User.findOne({ phoneNumber: req.body.phoneNumber })
+
+	if (!courier) {
+		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
+	}
+
+	courier = await User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, { supervisor: req.body.supervisor }, {
+		new: true,
+		runValidators: true
+	}).populate('productList')
 
 	res.status(200).json(courier)
 })
