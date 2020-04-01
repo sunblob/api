@@ -48,7 +48,7 @@ exports.authorizeCourier = () => {
 	return (req, res, next) => {
 		const { supervisor } = req.user
 		console.log("super", supervisor)
-		if (supervisor == 'bomj') {
+		if (supervisor === null) {
 			return next(new ErrorResponse(`У курьера нет прав на выполение действий без руководства`, 403))
 		}
 
