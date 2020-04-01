@@ -26,12 +26,12 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
 			.where({ role: 'courier', isActive: active })
 			.where('coordinates')
 			.within()
-			.box(lowerLeft, upperRight)
+			.box(lowerLeft, upperRight).populate('productList').populate('supervisor', 'name')
 		res.status(200).json(couriers)
 		return
 	}
 
-	const couriers = await User.find().where({ role: 'courier', isActive: active }).populate('productList')
+	const couriers = await User.find().where({ role: 'courier', isActive: active }).populate('productList').populate('supervisor', 'name')
 
 	res.status(200).json(couriers)
 })
@@ -51,12 +51,12 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 			.where({ role: 'courier' })
 			.where('coordinates')
 			.within()
-			.box(lowerLeft, upperRight)
+			.box(lowerLeft, upperRight).populate('productList').populate('supervisor', 'name')
 		res.status(200).json(couriers)
 		return
 	}
 
-	const couriers = await User.find().where({ role: 'courier' }).populate('productList')
+	const couriers = await User.find().where({ role: 'courier' }).populate('productList').populate('supervisor', 'name')
 
 	res.status(200).json(couriers)
 })
@@ -67,7 +67,7 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
     @access     private
 */
 exports.getMyCouriers = asyncHandler(async (req, res, next) => {
-	const couriers = await User.find().where({ role: 'courier', supervisor: req.user._id }).populate('productList')
+	const couriers = await User.find().where({ role: 'courier', supervisor: req.user._id }).populate('productList').populate('supervisor', 'name')
 
 	res.status(200).json(couriers)
 })
@@ -78,7 +78,7 @@ exports.getMyCouriers = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.getCourier = asyncHandler(async (req, res, next) => {
-	const courier = await User.findById(req.params.id).populate('productList')
+	const courier = await User.findById(req.params.id).populate('productList').populate('supervisor', 'name')
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -102,7 +102,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 	courier = await User.findByIdAndUpdate(req.params.id, req.body, {
 		new: true,
 		runValidators: true
-	}).populate('productList')
+	}).populate('productList').populate('supervisor', 'name')
 
 	res.status(200).json(courier)
 })
@@ -135,7 +135,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 	courier = await User.findByIdAndUpdate(req.params.id, update, {
 		new: true,
 		runValidators: true
-	}).populate('productList')
+	}).populate('productList').populate('supervisor', 'name')
 
 	res.status(200).json(courier)
 })
@@ -155,7 +155,7 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
 	courier = await User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, { supervisor: req.body.supervisor }, {
 		new: true,
 		runValidators: true
-	}).populate('productList')
+	}).populate('productList').populate('supervisor', 'name')
 
 	res.status(200).json(courier)
 })
@@ -231,7 +231,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 				{ phoneNumber: obj.phoneNumber },
 				{ token },
 				{ new: true, runValidators: true }
-			).populate('productList')
+			).populate('productList').populate('supervisor', 'name')
 			obj = await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		} else {
 			courier = await User.create({
