@@ -9,7 +9,9 @@ const {
 	updateSelf,
 	authWithNumber,
 	codeCheck,
-	addSupervisor
+	addSupervisor,
+  removeSupervisor,
+  removeSupervisorSelf
 } = require('../controllers/courierController')
 
 const router = express.Router()
@@ -26,6 +28,10 @@ router.route('/all').get(getAllCouriers)
 router.route('/my').get(protect, authorize('supervisor'), getMyCouriers)
 
 router.route('/addsupervisor').post(protect, authorize('supervisor'), addSupervisor)
+
+router.route('/removesupervisor').post(protect, authorize('supervisor'), removeSupervisor)
+
+router.route('/:id/unsubscribe').get(protect, authorize('courier'), authorizeCourier(), removeSupervisorSelf)
 
 router
 	.route('/:id')

@@ -103,11 +103,11 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
 
-	const { name, supervisor } = req.body
+	const { name } = req.body
 
 	courier = await User.findByIdAndUpdate(
 		req.params.id,
-		{ name, supervisor },
+		{ name },
 		{
 			new: true,
 			runValidators: true
@@ -124,8 +124,9 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 */
 exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
-
-	const { name, isActive, isCurrentlyNotHere, coordinates } = req.body
+  
+  console.log(req.body)
+	const { isActive, isCurrentlyNotHere, coordinates, supervisor } = req.body
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -139,7 +140,6 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 	courier = await User.findByIdAndUpdate(
 		req.params.id,
 		{
-			name,
 			isActive,
 			isCurrentlyNotHere,
 			coordinates
@@ -155,7 +155,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       обновление полей курьера
-    @route      PUT /api/couriers/addsupervisor
+    @route      POST /api/couriers/addsupervisor
     @access     private
 */
 exports.addSupervisor = asyncHandler(async (req, res, next) => {
@@ -164,10 +164,85 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
+ 
+  if (courier.supervisor != null) {
+    return next(new ErrorResponse(`? ??????? ${courier._id} ??? ???? ????????????`, 403))
+  }
 
 	courier = await User.findOneAndUpdate(
 		{ phoneNumber: req.body.phoneNumber },
 		{ supervisor: req.body.supervisor },
+		{
+			new: true,
+			runValidators: true
+		}
+	).populate('productList')
+
+	res.status(200).json(courier)
+})
+
+/*
+    @desc       обновление полей курьера
+    @route      POST /api/couriers/removesupervisor
+    @access     private
+*/
+exports.removeSupervisor = asyncHandler(async (req, res, next) => {
+	let courier = await User.findById(req.body.courierId)
+
+	if (!courier) {
+		return next(new ErrorResponse(`??????? ? id ${req.body.courierId} ???`, 403))
+	}
+ 
+  if (courier.supervisor.toString() != req.user._id.toString()) {
+    return next(new ErrorResponse(`??? ?? ??? ??????`, 403))
+  }
+
+	courier = await User.findByIdAndUpdate(
+		req.body.courierId,
+		{ 
+      supervisor: null,
+      isActive: false,
+      isCurrentlyNotHere: false,
+      name: '',
+      coordinates: null,
+      productList: []
+    },
+		{
+			new: true,
+			runValidators: true
+		}
+	)
+
+	res.status(200).json(courier)
+})
+
+/*
+    @desc       обновление полей курьера
+    @route      GET /api/couriers/:id/unsubscribe
+    @access     private
+*/
+exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
+	let courier = await User.findById(req.params.id)
+  
+
+	if (!courier) {
+		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
+	}
+
+	if (req.params.id != req.user._id) {
+		return next(new ErrorResponse('u cant change the info about other user', 403))
+	}
+
+	courier = await User.findByIdAndUpdate(
+		req.params.id,
+		{
+			isActive: false,
+			isCurrentlyNotHere: false,
+			coordinates: null,
+      supervisor: null,
+      productList: [],
+      name: '' 
+		},
 		{
 			new: true,
 			runValidators: true
@@ -254,6 +329,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 		} else {
 			courier = await User.create({
 				token,
+        name: '',
 				phoneNumber: obj.phoneNumber,
 				role: 'courier',
 				isActive: false,
@@ -261,10 +337,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 				supervisor: null,
 				avgRating: null,
 				productList: [],
-				coordinates: {
-					lng: 37.61556,
-					lat: 55.75222
-				}
+				coordinates: null
 			})
 			obj = await Code.findById(codeId, { resolved: true }, { new: true, runValidators: true })
 		}
