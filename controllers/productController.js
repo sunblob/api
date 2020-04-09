@@ -59,7 +59,7 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на удаление этого продукта`, 401))
 	}
 
-	product = await Product.findByIdAndDelete(req.params.id)
+	await product.remove()
 
 	res.status(200).json(product)
 })
@@ -98,6 +98,10 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
 exports.toggleProductInList = asyncHandler(async (req, res, next) => {
 	const product = await Product.findById(req.params.id)
 	let courier = await User.findById(req.user._id)
+
+	if (!product) {
+		return next(new ErrorResponse(`Продукта ${req.params.id} не существует`))
+	}
 
 	if (product.supervisor.toString() !== courier.supervisor.toString()) {
 		return next(new ErrorResponse('Этот продукт не принадлежит вашему боссу', 401))
