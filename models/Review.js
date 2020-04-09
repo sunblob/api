@@ -82,7 +82,7 @@ ReviewSchema.post('save', async function(next) {
 })
 
 // call getAverageCost after remove
-ReviewSchema.post('remove', async function(next) {
+ReviewSchema.pre('remove', async function(next) {
 	await this.constructor.getAverageRatingForCourier(this.courier)
 	await this.constructor.getAverageRatingForSupervisor(this.supevisor)
 })
