@@ -31,4 +31,9 @@ const ProductSchema = mongoose.Schema(
 	}
 )
 
+ProductSchema.pre('remove', async function(next) {
+	await this.model('User').update({ productList: this._id }, { $pull: { productList: this._id } }, { multi: true })
+	next()
+})
+
 module.exports = mongoose.model('Product', ProductSchema)
