@@ -228,7 +228,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 		} else {
 			supervisor = await User.create({
 				token,
-        name: '',
+				name: '',
 				phoneNumber: obj.phoneNumber,
 				role: 'supervisor',
 				supervisorStatus: 'disabled',

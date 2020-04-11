@@ -13,17 +13,25 @@ exports.createReviewForCourier = asyncHandler(async (req, res, next) => {
 	const user = req.user._id
 	const courier = await User.findById(req.params.id)
 
+	let review = await Review.findOne({
+		courier: req.params.id,
+		user: user._id
+	})
+
 	if (!courier || courier.role != 'courier') {
 		return next(new ErrorResponse('Этот пользователь не курьер', 400))
 	}
 
-	const { _id } = courier
-
-	const review = await Review.create({
-		courier: _id,
-		rating,
-		user
-	})
+	if (!review) {
+		review = await Review.create({
+			courier: courier._id,
+			rating,
+			user
+		})
+	} else {
+		review.rating = rating
+		await review.save()
+	}
 
 	res.status(200).json(review)
 })
@@ -37,18 +45,22 @@ exports.createReviewForSupervisor = asyncHandler(async (req, res, next) => {
 	const { rating } = req.body
 	const user = req.user._id
 	const supervisor = await User.findById(req.params.id)
+	let review = await Review.findOne({ supervisor: req.params.id, user: user._id })
 
-	if (!supervisor || supervisor.role != 'boss') {
+	if (!supervisor || supervisor.role != 'supervisor') {
 		return next(new ErrorResponse('Этот пользователь не босс', 400))
 	}
 
-	const { _id } = supervisor
-
-	const review = await Review.create({
-		supervisor: _id,
-		rating,
-		user
-	})
+	if (!review) {
+		review = await Review.create({
+			supervisor: supervisor._id,
+			rating,
+			user
+		})
+	} else {
+		review.rating = rating
+		await review.save()
+	}
 
 	res.status(200).json(review)
 })

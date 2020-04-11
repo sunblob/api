@@ -17,7 +17,7 @@ const productRouter = require('./products')
 
 const { protect, authorize, authorizeSupervisor } = require('../middleware/authProtect')
 
-router.use('/:id/reviews', protect, authorize('courier'), reviewRouter)
+router.use('/:id/reviews', protect, authorize('user'), reviewRouter)
 router.use('/:id/products', protect, authorize('courier', 'supervisor'), productRouter)
 
 router.route('/').get(getSupervisors)
