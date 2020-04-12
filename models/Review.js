@@ -55,10 +55,10 @@ ReviewSchema.statics.getAverageRatingForCourier = async function(courierId) {
 	} catch (error) {}
 }
 
-ReviewSchema.statics.getAverageRatingForSupervisor = async function(supevisorId) {
+ReviewSchema.statics.getAverageRatingForSupervisor = async function(supervisorId) {
 	const obj = await this.aggregate([
 		{
-			$match: { supevisor: supevisorId }
+			$match: { supeкvisor: supervisorId }
 		},
 		{
 			$group: {
@@ -69,7 +69,7 @@ ReviewSchema.statics.getAverageRatingForSupervisor = async function(supevisorId)
 	])
 
 	try {
-		await this.model('User').findByIdAndUpdate(supevisorId, {
+		await this.model('User').findByIdAndUpdate(supervisorId, {
 			avgRating: obj[0].avgRating
 		})
 	} catch (error) {}
@@ -78,13 +78,13 @@ ReviewSchema.statics.getAverageRatingForSupervisor = async function(supevisorId)
 // call getAveragecost after save
 ReviewSchema.post('save', async function(next) {
 	await this.constructor.getAverageRatingForCourier(this.courier)
-	await this.constructor.getAverageRatingForSupervisor(this.supevisor)
+	await this.constructor.getAverageRatingForSupervisor(this.supervisor)
 })
 
 // call getAverageCost after remove
 ReviewSchema.pre('remove', async function(next) {
 	await this.constructor.getAverageRatingForCourier(this.courier)
-	await this.constructor.getAverageRatingForSupervisor(this.supevisor)
+	await this.constructor.getAverageRatingForSupervisor(this.supervisor)
 })
 
 module.exports = mongoose.model('Review', ReviewSchema)
