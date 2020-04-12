@@ -10,8 +10,8 @@ const {
 	authWithNumber,
 	codeCheck,
 	addSupervisor,
-  removeSupervisor,
-  removeSupervisorSelf
+	removeSupervisor,
+	removeSupervisorSelf
 } = require('../controllers/courierController')
 
 const router = express.Router()
@@ -19,7 +19,7 @@ const reviewRouter = require('./reviews')
 
 const { protect, authorize, authorizeCourier } = require('../middleware/authProtect')
 
-router.use('/:id/reviews', protect, authorize('user'), reviewRouter)
+router.use('/:id/reviews', reviewRouter)
 
 router.route('/').get(getCouriers)
 

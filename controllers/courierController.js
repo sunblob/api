@@ -56,8 +56,15 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 			.box(lowerLeft, upperRight)
 			.populate('productList')
 
-		res.status(200).json(couriers)
-		return
+		// clustering
+		// const k1 = (upperRight[0] - lowerLeft[0]) / 10
+		// const k2 = (upperRight[1] - lowerLeft[1]) / 10
+
+		// console.log('koeff: ', k1, k2)
+
+		// const clusters = await User.getClusters(lowerLeft, upperRight, k1, k2)
+
+		return res.status(200).json(couriers)
 	}
 
 	const couriers = await User.find().where({ role: 'courier' }).populate('productList')
@@ -124,8 +131,8 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 */
 exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
-  
-  console.log(req.body)
+
+	console.log(req.body)
 	const { isActive, isCurrentlyNotHere, coordinates, supervisor } = req.body
 
 	if (!courier) {
@@ -164,10 +171,10 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
 	}
- 
-  if (courier.supervisor != null) {
-    return next(new ErrorResponse(`? ??????? ${courier._id} ??? ???? ????????????`, 403))
-  }
+
+	if (courier.supervisor != null) {
+		return next(new ErrorResponse(`? ??????? ${courier._id} ??? ???? ????????????`, 403))
+	}
 
 	courier = await User.findOneAndUpdate(
 		{ phoneNumber: req.body.phoneNumber },
@@ -192,21 +199,21 @@ exports.removeSupervisor = asyncHandler(async (req, res, next) => {
 	if (!courier) {
 		return next(new ErrorResponse(`??????? ? id ${req.body.courierId} ???`, 403))
 	}
- 
-  if (courier.supervisor.toString() != req.user._id.toString()) {
-    return next(new ErrorResponse(`??? ?? ??? ??????`, 403))
-  }
+
+	if (courier.supervisor.toString() != req.user._id.toString()) {
+		return next(new ErrorResponse(`??? ?? ??? ??????`, 403))
+	}
 
 	courier = await User.findByIdAndUpdate(
 		req.body.courierId,
-		{ 
-      supervisor: null,
-      isActive: false,
-      isCurrentlyNotHere: false,
-      name: '',
-      coordinates: null,
-      productList: []
-    },
+		{
+			supervisor: null,
+			isActive: false,
+			isCurrentlyNotHere: false,
+			name: '',
+			coordinates: null,
+			productList: []
+		},
 		{
 			new: true,
 			runValidators: true
@@ -223,7 +230,6 @@ exports.removeSupervisor = asyncHandler(async (req, res, next) => {
 */
 exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
-  
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -239,9 +245,9 @@ exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
 			isActive: false,
 			isCurrentlyNotHere: false,
 			coordinates: null,
-      supervisor: null,
-      productList: [],
-      name: '' 
+			supervisor: null,
+			productList: [],
+			name: ''
 		},
 		{
 			new: true,
@@ -329,7 +335,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 		} else {
 			courier = await User.create({
 				token,
-        name: '',
+				name: '',
 				phoneNumber: obj.phoneNumber,
 				role: 'courier',
 				isActive: false,

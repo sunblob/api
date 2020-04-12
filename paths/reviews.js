@@ -5,9 +5,8 @@ const router = express.Router({ mergeParams: true })
 
 const { protect, authorize } = require('../middleware/authProtect')
 
-router
-	.route('/')
-	.post(protect, authorize('user'), createReviewForCourier)
-	.post(protect, authorize('courier'), createReviewForSupervisor)
+router.route('/').post(protect, authorize('user'), createReviewForCourier)
+
+router.route('/create').post(protect, authorize('user'), createReviewForSupervisor)
 
 module.exports = router

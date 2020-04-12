@@ -18,7 +18,7 @@ const ReviewSchema = mongoose.Schema(
 			type: mongoose.Schema.ObjectId,
 			ref: 'User'
 		},
-		supevisor: {
+		supervisor: {
 			type: mongoose.Schema.ObjectId,
 			ref: 'User'
 		},

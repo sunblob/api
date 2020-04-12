@@ -10,7 +10,7 @@ const User = require('./../models/User')
 */
 exports.createReviewForCourier = asyncHandler(async (req, res, next) => {
 	const { rating } = req.body
-	const user = req.user._id
+	const user = req.user
 	const courier = await User.findById(req.params.id)
 
 	let review = await Review.findOne({
@@ -26,7 +26,7 @@ exports.createReviewForCourier = asyncHandler(async (req, res, next) => {
 		review = await Review.create({
 			courier: courier._id,
 			rating,
-			user
+			user: user._id
 		})
 	} else {
 		review.rating = rating
@@ -38,13 +38,14 @@ exports.createReviewForCourier = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       создание отзыва о боссе
-    @route      POST /api/supervisors/:id/review
+    @route      POST /api/supervisors/:id/review/create
     @access     public
 */
 exports.createReviewForSupervisor = asyncHandler(async (req, res, next) => {
 	const { rating } = req.body
-	const user = req.user._id
+	const user = req.user
 	const supervisor = await User.findById(req.params.id)
+	// console.log('review super ', supervisor)
 	let review = await Review.findOne({ supervisor: req.params.id, user: user._id })
 
 	if (!supervisor || supervisor.role != 'supervisor') {
@@ -55,12 +56,14 @@ exports.createReviewForSupervisor = asyncHandler(async (req, res, next) => {
 		review = await Review.create({
 			supervisor: supervisor._id,
 			rating,
-			user
+			user: user._id
 		})
 	} else {
 		review.rating = rating
 		await review.save()
 	}
+
+	console.log('rev super ', review)
 
 	res.status(200).json(review)
 })

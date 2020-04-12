@@ -15,7 +15,7 @@ const UserSchema = mongoose.Schema(
 			match: [ /^((\+7|7|8)+([0-9]){10})$/, 'Введите валидный номер телефона' ],
 			index: {
 				unique: true,
-      			partialFilterExpression: {phoneNumber: {$type: "string"}}
+				partialFilterExpression: { phoneNumber: { $type: 'string' } }
 			}
 		},
 		deviceId: {
@@ -62,10 +62,12 @@ const UserSchema = mongoose.Schema(
 			enum: [ 'disabled', 'standard', 'premium' ]
 		},
 		productList: {
-			type: [ {
-				type: mongoose.Schema.ObjectId,
-				ref: 'Product'
-			} ],
+			type: [
+				{
+					type: mongoose.Schema.ObjectId,
+					ref: 'Product'
+				}
+			],
 			default: undefined
 		}
 	},
@@ -76,6 +78,95 @@ const UserSchema = mongoose.Schema(
 		}
 	}
 )
+
+UserSchema.statics.getClusters = async function(lowerLeft, upperRight, k1, k2) {
+	const clusters = await this.aggregate([
+		{
+			$match: {
+				role: 'courier',
+				coordinates: { $not: [ null ] },
+				coordinates: {
+					$geoWithin: {
+						$box: [ lowerLeft, upperRight ]
+					}
+				}
+			}
+		},
+		{
+			$project: {
+				_id: 1,
+				token: 1,
+				geometry: {
+					lng: { $subtract: [ '$coordinates.lng', lowerLeft[0] ] },
+					lat: { $subtract: [ '$coordinates.lat', lowerLeft[1] ] }
+				}
+			}
+		},
+		{
+			$project: {
+				_id: 1,
+				token: 1,
+				geometry: {
+					lng: { $divide: [ '$geometry.lng', k1 ] },
+					lat: { $divide: [ '$geometry.lat', k2 ] }
+				}
+			}
+		},
+		{
+			$project: {
+				_id: 1,
+				token: 1,
+				geometry: {
+					lng: { $round: [ '$geometry.lng', 0 ] },
+					lat: { $round: [ '$geometry.lat', 0 ] }
+				}
+			}
+		},
+		{
+			$project: {
+				_id: 1,
+				token: 1,
+				geometry: {
+					lng: { $multiply: [ '$geometry.lng', k1 ] },
+					lat: { $multiply: [ '$geometry.lat', k2 ] }
+				}
+			}
+		},
+		{
+			$project: {
+				_id: 1,
+				token: 1,
+				geometry: {
+					lng: { $sum: [ '$geometry.lng', lowerLeft[0] ] },
+					lat: { $sum: [ '$geometry.lat', lowerLeft[1] ] }
+				}
+			}
+		},
+		{
+			$group: {
+				_id: '$geometry',
+				// geometry: '$geometry',
+				points: {
+					$push: {
+						_id: '$_id',
+						token: '$token'
+					}
+				},
+				count: { $sum: 1 }
+			}
+		},
+		{
+			$project: {
+				_id: 0,
+				coordinates: '$_id',
+				count: '$count',
+				points: 1
+			}
+		}
+	])
+
+	return clusters
+}
 
 UserSchema.pre('remove', async function(next) {
 	await this.model('Review').deleteMany({ user: this._id })
