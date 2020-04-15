@@ -14,12 +14,13 @@ const {
 	removeSupervisorSelf
 } = require('../controllers/courierController')
 
+const { createReviewForCourier } = require('../controllers/reviewController')
+
 const router = express.Router()
-const reviewRouter = require('./reviews')
 
 const { protect, authorize, authorizeCourier } = require('../middleware/authProtect')
 
-router.use('/:id/reviews', reviewRouter)
+router.route('/:id/reviews').post(protect, authorize('user'), createReviewForCourier)
 
 router.route('/').get(getCouriers)
 

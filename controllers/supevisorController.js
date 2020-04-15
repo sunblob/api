@@ -8,66 +8,6 @@ const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
 const admin = require('firebase-admin')
 
 /*
-    @desc       регистрация босса
-    @route      POST /api/supervisors/register
-    @access     public
-*/
-exports.register = asyncHandler(async (req, res, next) => {
-	const { deviceId, phoneNumber, password } = req.body
-	const token = tokgen.generate()
-
-	let user = await User.findOne({ deviceId })
-
-	if (user) {
-		user = await User.findOneAndUpdate(
-			{ deviceId },
-			{
-				phoneNumber,
-				password,
-				role: 'supervisor',
-				supervisorStatus: 'disabled'
-			},
-			{ new: true, runValidators: true }
-		)
-	} else {
-		user = await User.create({
-			token,
-			phoneNumber,
-			password,
-			deviceId,
-			role: 'supervisor',
-			supervisorStatus: 'disabled'
-		})
-	}
-
-	res.status(200).json(user)
-})
-
-/*
-    @desc       вход босса
-    @route      POST /api/supervisors/login
-    @access     public
-*/
-exports.login = asyncHandler(async (req, res, next) => {
-	const { phoneNumber, password } = req.body
-	const token = tokgen.generate()
-
-	if (!phoneNumber || !password) {
-		return next(new ErrorResponse('Введите номер и пароль', 400))
-	}
-
-	let user = await User.findOne({ phoneNumber })
-
-	if (!user) {
-		return next(new ErrorResponse('Пользователя с таким номером телефона не существует', 400))
-	}
-
-	user = await User.findOneAndUpdate({ phoneNumber }, { token }, { new: true, runValidators: true })
-
-	res.status(200).json(user)
-})
-
-/*
     @desc       получение списка боссов
     @route      GET /api/supervisors
     @access     public

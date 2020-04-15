@@ -45,7 +45,6 @@ exports.createReviewForSupervisor = asyncHandler(async (req, res, next) => {
 	const { rating } = req.body
 	const user = req.user
 	const supervisor = await User.findById(req.params.id)
-	// console.log('review super ', supervisor)
 	let review = await Review.findOne({ supervisor: req.params.id, user: user._id })
 
 	if (!supervisor || supervisor.role != 'supervisor') {
@@ -62,8 +61,6 @@ exports.createReviewForSupervisor = asyncHandler(async (req, res, next) => {
 		review.rating = rating
 		await review.save()
 	}
-
-	console.log('rev super ', review)
 
 	res.status(200).json(review)
 })
