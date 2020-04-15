@@ -34,7 +34,6 @@ const app = express()
 
 // файлы с путями
 const couriers = require('./paths/couriers')
-const reviews = require('./paths/reviews')
 const supervisors = require('./paths/supervisors')
 const products = require('./paths/products')
 const users = require('./paths/users')
@@ -64,7 +63,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 // app.post('/api/handshake', handshake)
 // привязка путей
 app.use('/api/couriers', couriers)
-app.use('/api/reviews', reviews)
 app.use('/api/supervisors', supervisors)
 app.use('/api/products', products)
 app.use('/api/users', users)
