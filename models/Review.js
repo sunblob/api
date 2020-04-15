@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-// оценка для курьера
+// оценка для курьера/руководства
 const ReviewSchema = mongoose.Schema(
 	{
 		rating: {
@@ -58,11 +58,11 @@ ReviewSchema.statics.getAverageRatingForCourier = async function(courierId) {
 ReviewSchema.statics.getAverageRatingForSupervisor = async function(supervisorId) {
 	const obj = await this.aggregate([
 		{
-			$match: { supeкvisor: supervisorId }
+			$match: { supervisor: supervisorId }
 		},
 		{
 			$group: {
-				_id: '$supevisor',
+				_id: '$supervisor',
 				avgRating: { $avg: '$rating' }
 			}
 		}

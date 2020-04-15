@@ -132,8 +132,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
 
-	console.log(req.body)
-	const { isActive, isCurrentlyNotHere, coordinates, supervisor } = req.body
+	const { isActive, isCurrentlyNotHere, coordinates } = req.body
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
