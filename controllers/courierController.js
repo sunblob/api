@@ -132,7 +132,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 exports.updateSelf = asyncHandler(async (req, res, next) => {
 	let courier = await User.findById(req.params.id)
 
-	const { isActive, isCurrentlyNotHere, coordinates } = req.body
+	const { isActive, isCurrentlyNotHere, coordinates, hint } = req.body
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -148,7 +148,8 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 		{
 			isActive,
 			isCurrentlyNotHere,
-			coordinates
+			coordinates,
+      hint
 		},
 		{
 			new: true,
@@ -210,6 +211,7 @@ exports.removeSupervisor = asyncHandler(async (req, res, next) => {
 			isActive: false,
 			isCurrentlyNotHere: false,
 			name: '',
+      hint: '',
 			coordinates: null,
 			productList: []
 		},
@@ -246,7 +248,8 @@ exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
 			coordinates: null,
 			supervisor: null,
 			productList: [],
-			name: ''
+			name: '',
+      hint: ''
 		},
 		{
 			new: true,
@@ -335,6 +338,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 			courier = await User.create({
 				token,
 				name: '',
+        hint: '',
 				phoneNumber: obj.phoneNumber,
 				role: 'courier',
 				isActive: false,
