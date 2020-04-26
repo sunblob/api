@@ -33,7 +33,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
 		return
 	}
 
-	const couriers = await User.find().where({ role: 'courier', isActive: active }).populate('productList')
+	const couriers = await User.find().where({ role: 'courier', isActive: active }).where('coordinates').ne(null).populate('productList')
 
 	res.status(200).json(couriers)
 })
