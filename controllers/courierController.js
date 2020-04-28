@@ -169,7 +169,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
     @access     private
 */
 exports.addSupervisor = asyncHandler(async (req, res, next) => {
-	let courier = await User.findOne({ phoneNumber: req.body.phoneNumber })
+	let courier = await User.findOne({ phoneNumber: req.body.phoneNumber, role: 'courier' })
 
 	if (!courier) {
 		return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -180,7 +180,7 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
 	}
 
 	courier = await User.findOneAndUpdate(
-		{ phoneNumber: req.body.phoneNumber },
+		{ phoneNumber: req.body.phoneNumber, role: 'courier' },
 		{ supervisor: req.body.supervisor },
 		{
 			new: true,

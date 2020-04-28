@@ -160,7 +160,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 
 		if (supervisor) {
 			supervisor = await User.findOneAndUpdate(
-				{ phoneNumber: obj.phoneNumber, role: 'courier' },
+				{ phoneNumber: obj.phoneNumber, role: 'supervisor' },
 				{ token },
 				{ new: true, runValidators: true }
 			)

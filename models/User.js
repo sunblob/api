@@ -13,10 +13,10 @@ const UserSchema = mongoose.Schema(
 		phoneNumber: {
 			type: String,
 			match: [/^((\+7|7|8)+([0-9]){10})$/, 'Введите валидный номер телефона'],
-			index: {
-				unique: true,
-				partialFilterExpression: { phoneNumber: { $type: 'string' } }
-			}
+			//index: {
+			//	unique: true,
+			//	partialFilterExpression: { phoneNumber: { $type: 'string' } }
+			//}
 		},
 		deviceId: {
 			type: String,
