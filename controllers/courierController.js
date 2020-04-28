@@ -49,25 +49,11 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 		const lowerLeft = box.slice(0, 2)
 		const upperRight = box.slice(2)
 
-		const couriers = await User.find()
-			.where({ role: 'courier' })
-			.where('coordinates')
-			.within()
-			.box(lowerLeft, upperRight)
-			.populate('productList')
+		const a = 10
+		const b = 10
+		const clusters = await User.getBetterClusters(lowerLeft, upperRight, a, b)
 
-		// clustering
-		// const k1 = (upperRight[0] - lowerLeft[0]) / 10
-		// const k2 = (upperRight[1] - lowerLeft[1]) / 10
-
-		// console.log('koeff: ', k1, k2)
-
-		// const clusters = await User.getClusters(lowerLeft, upperRight, k1, k2)
-		// const a = 10
-		// const b = 10
-		// const clusters = await User.getBetterClusters(lowerLeft, upperRight, a, b)
-
-		return res.status(200).json(couriers)
+		return res.status(200).json(clusters)
 	}
 
 	const couriers = await User.find().where({ role: 'courier' }).populate('productList')

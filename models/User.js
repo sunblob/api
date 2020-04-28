@@ -100,6 +100,7 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 		{
 			$match: {
 				role: 'courier',
+				isActive: true,
 				coordinates: { $not: [null] },
 				coordinates: {
 					$geoWithin: {
@@ -111,8 +112,11 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 		{
 			$project: {
 				_id: 1,
+				name: 1,
+				hint: 1,
 				phoneNumber: 1,
 				isActive: 1,
+				isCurrentlyNotHere: 1,
 				supervisor: 1,
 				avgRating: 1,
 				coordinates: 1,
@@ -133,8 +137,11 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 		{
 			$project: {
 				_id: 1,
+				name: 1,
+				hint: 1,
 				phoneNumber: 1,
 				isActive: 1,
+				isCurrentlyNotHere: 1,
 				supervisor: 1,
 				avgRating: 1,
 				coordinates: 1,
@@ -149,8 +156,11 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 		{
 			$project: {
 				_id: 1,
+				name: 1,
+				hint: 1,
 				phoneNumber: 1,
 				isActive: 1,
+				isCurrentlyNotHere: 1,
 				supervisor: 1,
 				avgRating: 1,
 				coordinates: 1,
@@ -165,8 +175,11 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 		{
 			$project: {
 				_id: 1,
+				name: 1,
+				hint: 1,
 				phoneNumber: 1,
 				isActive: 1,
+				isCurrentlyNotHere: 1,
 				supervisor: 1,
 				avgRating: 1,
 				coordinates: 1,
@@ -181,8 +194,11 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 		{
 			$project: {
 				_id: 1,
+				name: 1,
+				hint: 1,
 				phoneNumber: 1,
 				isActive: 1,
+				isCurrentlyNotHere: 1,
 				supervisor: 1,
 				avgRating: 1,
 				coordinates: 1,
@@ -206,8 +222,16 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 	const result = outputArr.map(point => {
 		if (arrA[point.i][point.j] === 1) {
 			point.amount = 1
+			delete point.i
+			delete point.j
 		} else {
 			point.amount = arrA[point.i][point.j]
+			point.i = point.i * k1 + lowerLeft[0]
+			point.j = point.j * k2 + lowerLeft[1]
+			point.coordinates.lng = point.i
+			point.coordinates.lat = point.j
+			delete point.i
+			delete point.j
 		}
 		return point
 	})
