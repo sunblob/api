@@ -156,11 +156,11 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 	if (obj.code !== code) {
 		return next(new ErrorResponse('Неправильный код', 400))
 	} else {
-		let supervisor = await User.findOne({ phoneNumber: obj.phoneNumber })
+		let supervisor = await User.findOne({ phoneNumber: obj.phoneNumber, role: 'supervisor' })
 
 		if (supervisor) {
 			supervisor = await User.findOneAndUpdate(
-				{ phoneNumber: obj.phoneNumber },
+				{ phoneNumber: obj.phoneNumber, role: 'courier' },
 				{ token },
 				{ new: true, runValidators: true }
 			)

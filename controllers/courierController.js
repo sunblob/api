@@ -63,6 +63,9 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 		// console.log('koeff: ', k1, k2)
 
 		// const clusters = await User.getClusters(lowerLeft, upperRight, k1, k2)
+		// const a = 10
+		// const b = 10
+		// const clusters = await User.getBetterClusters(lowerLeft, upperRight, a, b)
 
 		return res.status(200).json(couriers)
 	}
@@ -149,7 +152,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
 			isActive,
 			isCurrentlyNotHere,
 			coordinates,
-      hint
+			hint
 		},
 		{
 			new: true,
@@ -211,7 +214,7 @@ exports.removeSupervisor = asyncHandler(async (req, res, next) => {
 			isActive: false,
 			isCurrentlyNotHere: false,
 			name: '',
-      hint: '',
+			hint: '',
 			coordinates: null,
 			productList: []
 		},
@@ -249,7 +252,7 @@ exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
 			supervisor: null,
 			productList: [],
 			name: '',
-      hint: ''
+			hint: ''
 		},
 		{
 			new: true,
@@ -324,11 +327,11 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 	if (obj.code !== code) {
 		return next(new ErrorResponse('Неправильный код', 400))
 	} else {
-		let courier = await User.findOne({ phoneNumber: obj.phoneNumber })
+		let courier = await User.findOne({ phoneNumber: obj.phoneNumber, role: 'courier' })
 
 		if (courier) {
 			courier = await User.findOneAndUpdate(
-				{ phoneNumber: obj.phoneNumber },
+				{ phoneNumber: obj.phoneNumber, role: 'courier' },
 				{ token },
 				{ new: true, runValidators: true }
 			).populate('productList')
@@ -338,7 +341,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 			courier = await User.create({
 				token,
 				name: '',
-        hint: '',
+				hint: '',
 				phoneNumber: obj.phoneNumber,
 				role: 'courier',
 				isActive: false,
