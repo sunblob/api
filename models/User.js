@@ -129,7 +129,8 @@ UserSchema.statics.getBetterClusters = async function (
         isActive: 1,
         isCurrentlyNotHere: 1,
         supervisor: 1,
-        avgRating: 1,
+		avgRating: 1,
+		productList: 1,
         coordinates: 1,
         i: {
           $cond: {
@@ -154,7 +155,8 @@ UserSchema.statics.getBetterClusters = async function (
         isActive: 1,
         isCurrentlyNotHere: 1,
         supervisor: 1,
-        avgRating: 1,
+		avgRating: 1,
+		productList: 1,
         coordinates: 1,
         i: {
           $subtract: ['$i', lowerLeft[1]]
@@ -173,7 +175,8 @@ UserSchema.statics.getBetterClusters = async function (
         isActive: 1,
         isCurrentlyNotHere: 1,
         supervisor: 1,
-        avgRating: 1,
+		avgRating: 1,
+		productList: 1,
         coordinates: 1,
         i: {
           $divide: ['$i', k1]
@@ -192,7 +195,8 @@ UserSchema.statics.getBetterClusters = async function (
         isActive: 1,
         isCurrentlyNotHere: 1,
         supervisor: 1,
-        avgRating: 1,
+		avgRating: 1,
+		productList: 1,
         coordinates: 1,
         i: {
           $round: ['$i', 0]
@@ -211,12 +215,37 @@ UserSchema.statics.getBetterClusters = async function (
         isActive: 1,
         isCurrentlyNotHere: 1,
         supervisor: 1,
-        avgRating: 1,
+		avgRating: 1,
+		productList: 1,
         coordinates: 1,
         i: 1,
         j: 1
-      }
-    }
+	  },
+	},
+	{
+		$lookup: {
+			from: 'products',
+			localField: 'productList',
+			foreignField: '_id',
+			as: 'products'
+		}
+	},
+	{
+		$project: {
+			_id: 1,
+			name: 1,
+			hint: 1,
+			phoneNumber: 1,
+			isActive: 1,
+			isCurrentlyNotHere: 1,
+			supervisor: 1,
+			avgRating: 1,
+			productList: '$products',
+			coordinates: 1,
+			i: 1,
+			j: 1
+		  },
+	}
   ])
 
   points.forEach(point => {
@@ -241,7 +270,8 @@ UserSchema.statics.getBetterClusters = async function (
       if (point.i > 180) point.i = point.i - 360
       point.j = point.j * k2 + lowerLeft[0]
       point.coordinates.lng = point.i
-      point.coordinates.lat = point.j
+	  point.coordinates.lat = point.j
+	  point.productList = []
       delete point.i
       delete point.j
     }
