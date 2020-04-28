@@ -96,12 +96,15 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 
 	let k1 = upperRight[0] - lowerLeft[0] / a
 	let k2 = upperRight[1] - lowerLeft[1] / b
+
+	const tmp = await this.find().where('coordinates').within().box(lowerLeft, upperRight)
+
 	const points = await this.aggregate([
 		{
 			$match: {
 				role: 'courier',
 				isActive: true,
-				coordinates: { $not: [null] },
+				// coordinates: { $not: [null] },
 				coordinates: {
 					$geoWithin: {
 						$box: [lowerLeft, upperRight]
@@ -240,7 +243,9 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
 
 }
 
-UserSchema.statics.getClusters = async function (lowerLeft, upperRight, k1, k2) {
+UserSchema.statics.getClusters = async function (lowerLeft, upperRight, a, b) {
+	let k1 = upperRight[0] - lowerLeft[0] / a
+	let k2 = upperRight[1] - lowerLeft[1] / b
 	const clusters = await this.aggregate([
 		{
 			$match: {
