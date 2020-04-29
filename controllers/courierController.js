@@ -49,7 +49,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
     @access     public
 */
 
-const {client} = require('./../config/mongo')
+// const {client} = require('./../config/mongo')
 
 exports.getAllCouriers = asyncHandler(async (req, res, next) => {
   if (req.query.box) {
