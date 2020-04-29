@@ -2,6 +2,7 @@ const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
 const User = require('./../models/User')
 const Code = require('./../models/Code')
+const mongoose = require('mongoose')
 
 const TokenGenerator = require('uuid-token-generator')
 const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
@@ -47,18 +48,25 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
     @route      GET /api/couriers/all
     @access     public
 */
+
+const {client} = require('./../config/mongo')
+
 exports.getAllCouriers = asyncHandler(async (req, res, next) => {
   if (req.query.box) {
     const box = req.query.box.split(',')
-    const lowerLeft = box.slice(0, 2)
-    const upperRight = box.slice(2)
+    const llng = parseFloat(box.slice(0, 1))
+    const llat = parseFloat(box.slice(1, 2))
+    const ulng = parseFloat(box.slice(2, 3))
+    const ulat = parseFloat(box.slice(3, 4))
+    
+    const lowerLeft = [llng, llat]
+    const upperRight = [ulng, ulat]
 
-    console.log('ll: ', lowerLeft, 'ur: ', upperRight)
+    // console.log('ll: ', lowerLeft, 'ur: ', upperRight)
 
     const a = 30
     const b = 30
     const clusters = await User.getBetterClusters(lowerLeft, upperRight, a, b)
-
     return res.status(200).json(clusters)
   }
 

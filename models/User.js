@@ -87,22 +87,16 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
   }
 
   let outputArr = []
-  // console.log("arr: ", arr)
-  if (upperRight[1] < lowerLeft[1]) upperRight[1] += 360
+  if (upperRight[0] < lowerLeft[0]) upperRight[0] += 360
 
-  let k1 = (upperRight[1] - lowerLeft[1]) / a
-  let k2 = (upperRight[0] - lowerLeft[0]) / b
-
-  // const tmp = await this.find()
-  //   .where('coordinates')
-  //   .within()
-  //   .box(lowerLeft, upperRight)
+  let k1 = (upperRight[0] - lowerLeft[0]) / a
+  let k2 = (upperRight[1] - lowerLeft[1]) / b
 
   const points = await this.aggregate([
     {
       $match: {
         role: 'courier',
-        isActive: true,
+        // isActive: true,
         // coordinates: { $not: [null] },
         coordinates: {
           $geoWithin: {
@@ -113,7 +107,6 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
     },
     {
       $project: {
-        _id: 1,
         name: 1,
         hint: 1,
         phoneNumber: 1,
@@ -126,20 +119,31 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
         i: {
           $cond: {
             if: {
-              $lt: ['$coordinates.lng', lowerLeft[1]]
+              $lt: [
+                {
+                  $arrayElemAt: ['$coordinates', 0]
+                }, lowerLeft[0]
+              ]
             },
             then: {
-              $sum: ['$coordinates.lng', 360]
+              $sum: [
+                {
+                  $arrayElemAt: ['$coordinates', 0]
+                }, 360
+              ]
             },
-            else: '$coordinates.lng'
+            else: {
+              $arrayElemAt: ['$coordinates', 0]
+            }
           }
         },
-        j: '$coordinates.lat'
+        j: {
+          $arrayElemAt: ['$coordinates', 1]
+        }
       }
     },
     {
       $project: {
-        _id: 1,
         name: 1,
         hint: 1,
         phoneNumber: 1,
@@ -150,16 +154,15 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
         productList: 1,
         coordinates: 1,
         i: {
-          $subtract: ['$i', lowerLeft[1]]
+          $subtract: ['$i', lowerLeft[0]]
         },
         j: {
-          $subtract: ['$j', lowerLeft[0]]
+          $subtract: ['$j', lowerLeft[1]]
         }
       }
     },
     {
       $project: {
-        _id: 1,
         name: 1,
         hint: 1,
         phoneNumber: 1,
@@ -179,7 +182,6 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
     },
     {
       $project: {
-        _id: 1,
         name: 1,
         hint: 1,
         phoneNumber: 1,
@@ -199,7 +201,6 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
     },
     {
       $project: {
-        _id: 1,
         name: 1,
         hint: 1,
         phoneNumber: 1,
@@ -223,7 +224,6 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
     },
     {
       $project: {
-        _id: 1,
         name: 1,
         hint: 1,
         phoneNumber: 1,
@@ -243,7 +243,7 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
     const i = point.i
     const j = point.j
 
-    console.log('i: ', i, 'j: ', j)
+    // console.log('i: ', i, 'j: ', j)
     if (arrA[i][j] == 0) {
       outputArr.push(point)
     }
@@ -257,9 +257,9 @@ UserSchema.statics.getBetterClusters = async function (lowerLeft, upperRight, a,
       delete point.j
     } else {
       point.amount = arrA[point.i][point.j]
-      point.i = point.i * k1 + lowerLeft[1]
+      point.i = point.i * k1 + lowerLeft[0]
       if (point.i > 180) point.i = point.i - 360
-      point.j = point.j * k2 + lowerLeft[0]
+      point.j = point.j * k2 + lowerLeft[1]
       point.coordinates.lng = point.i
       point.coordinates.lat = point.j
       point.productList = []

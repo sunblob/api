@@ -30,6 +30,9 @@ connectDB()
 const firebase = require('./config/firebase')
 firebase()
 
+// const {connect} = require('./config/mongo')
+// connect()
+
 const app = express()
 
 // файлы с путями
