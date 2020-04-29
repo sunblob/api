@@ -41,12 +41,8 @@ const UserSchema = mongoose.Schema(
       max: 5
     },
     coordinates: {
-      lng: {
-        type: Number
-      },
-      lat: {
-        type: Number
-      }
+      type: [Number],
+      index: '2d'
     },
     role: {
       type: String,

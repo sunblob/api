@@ -26,7 +26,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
       .where({ role: 'courier', isActive: active })
       .where('coordinates')
       .within()
-      .box({ ll: lowerLeft, ur: upperRight })
+      .box(lowerLeft, upperRight)
       .populate('productList')
 
     res.status(200).json(couriers)
