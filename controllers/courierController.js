@@ -58,7 +58,7 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
     const llat = parseFloat(box.slice(1, 2))
     const ulng = parseFloat(box.slice(2, 3))
     const ulat = parseFloat(box.slice(3, 4))
-    
+
     const lowerLeft = [llng, llat]
     const upperRight = [ulng, ulat]
 
@@ -105,6 +105,44 @@ exports.getCourier = asyncHandler(async (req, res, next) => {
   res.status(200).json(courier)
 })
 
+
+/*
+    @desc       получение инф. о себе
+    @route      GET /api/couriers/me
+    @access     private
+*/
+exports.getMe = asyncHandler(async (req, res, next) => {
+  const id = req.user._id
+  const user = await User.findById(id).populate('productList')
+
+  if (!user) {
+    return next(new ErrorResponse(`Пользователя с id ${id} не существует`, 404))
+  }
+
+  res.status(200).json(user)
+})
+
+/*
+    @desc       обновление своих полей
+    @route      PUT /api/couriers/me
+    @access     private
+*/
+exports.updateMe = asyncHandler(async (req, res, next) => {
+  const id = req.user._id
+
+  const {isActive, isCurrentlyNotHere, coordinates, hint} = req.body
+
+  const user = await User.findByIdAndUpdate(id, {
+    isActive,
+    isCurrentlyNotHere,
+    hint,
+    coordinates
+  }, { new: true, runValidators: true })
+
+  res.status(200).json(user)
+
+})
+
 /*
     @desc       обновление полей курьера
     @route      PUT /api/couriers/:id
@@ -145,8 +183,7 @@ exports.updateSelf = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
   }
 
-  if (req.params.id != req.user._id) {
-    console.log('param: ', req.params.id, 'req.user: ', req.user._id)
+  if (req.params.id != req.user._id.toString()) {
     return next(
       new ErrorResponse('u cant change the info about other user', 403)
     )

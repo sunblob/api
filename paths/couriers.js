@@ -11,7 +11,9 @@ const {
 	codeCheck,
 	addSupervisor,
 	removeSupervisor,
-	removeSupervisorSelf
+	removeSupervisorSelf,
+	getMe,
+	updateMe
 } = require('../controllers/courierController')
 
 const { createReviewForCourier } = require('../controllers/reviewController')
@@ -19,6 +21,8 @@ const { createReviewForCourier } = require('../controllers/reviewController')
 const router = express.Router()
 
 const { protect, authorize, authorizeCourier } = require('../middleware/authProtect')
+
+router.route('/me').get(protect, authorize('courier'),getMe).put(protect, authorize('courier'), updateMe)
 
 router.route('/:id/reviews').post(protect, authorize('user'), createReviewForCourier)
 

@@ -2,17 +2,16 @@ const express = require('express')
 const {
 	addProduct,
 	getProduct,
-	getProducts,
 	updateProduct,
 	deleteProduct,
 	toggleProductInList
 } = require('../controllers/productController')
 
-const router = express.Router({ mergeParams: true })
+const router = express.Router()
 
 const { protect, authorize, authorizeCourier } = require('../middleware/authProtect')
 
-router.route('/').get(getProducts).post(protect, authorize('supervisor'), addProduct)
+router.route('/').post(protect, authorize('supervisor'), addProduct)
 
 router
 	.route('/:id')

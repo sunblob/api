@@ -34,6 +34,22 @@ exports.getSupervisor = asyncHandler(async (req, res, next) => {
 })
 
 /*
+    @desc       получение информации о себе
+    @route      GET /api/supervisors/me
+    @access     private
+*/
+exports.getMe = asyncHandler(async (req, res, next) => {
+	const id = req.user._id
+	const supervisor = await User.findById(id)
+
+	if (!supervisor) {
+		return next(new ErrorResponse(`Нет босса с айди ${id}`, 404))
+	}
+
+	res.status(200).json(supervisor)
+})
+
+/*
     @desc       обновление полей босса
     @route      PUT /api/supervisors/:id
     @access     public
@@ -64,20 +80,23 @@ exports.updateSupervisor = asyncHandler(async (req, res, next) => {
 })
 
 /*
-    @desc       обновление имени босса
-    @route      PUT /api/supervisors/:id
-    @access     public
+    @desc       обновление полей босса
+    @route      PUT /api/supervisors/me
+    @access     private
 */
-exports.updateName = asyncHandler(async (req, res, next) => {
-	let supervisor = await User.findById(req.params.id)
-	const { name } = req.body
+exports.updateMe = asyncHandler(async (req, res, next) => {
+	const id = req.user._id
+
+	let supervisor = await User.findById(id)
 
 	if (!supervisor) {
-		return next(new ErrorResponse(`Нет босса с айди ${req.params.id}`, 404))
+		return next(new ErrorResponse(`Нет босса с айди ${id}`, 404))
 	}
 
+	const { name } = req.body
+
 	supervisor = await User.findByIdAndUpdate(
-		req.params.id,
+		id,
 		{ name },
 		{
 			new: true,
@@ -87,6 +106,7 @@ exports.updateName = asyncHandler(async (req, res, next) => {
 
 	res.status(200).json(supervisor)
 })
+
 
 /*
     @desc       Удаление босса

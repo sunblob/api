@@ -17,14 +17,20 @@ exports.protect = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse('нет доступа к данному роуту', 401))
 	}
 
-	try {
-		// проверка токена
-		req.user = await User.findOne({ token })
-		// console.log(req.user)
+	// try {
+	// 	// проверка токена
+	// 	req.user = await User.findOne({ token })
 
+	// 	next()
+	// } catch (error) {
+	// 	return next(new ErrorResponse('возможно токена больше не существует', 404))
+	// }
+	req.user = await User.findOne({token})
+
+	if (!req.user) {
+		return next(new ErrorResponse('Неверный токен, либо его не существует', 404))
+	} else {
 		next()
-	} catch (error) {
-		return next(new ErrorResponse('возможно токена больше не существует', 404))
 	}
 })
 

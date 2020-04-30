@@ -33,8 +33,8 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Товара с id ${req.params.id} не сущетвует`, 404))
 	}
 
-	if (product.supervisor.toString() !== req.user.id) {
-		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на редактирование этого продукта`, 401))
+	if (product.supervisor.toString() !== req.user._id) {
+		return next(new ErrorResponse(`Босс с id ${req.user._id} не имеет прав на редактирование этого продукта`, 401))
 	}
 
 	product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
@@ -55,7 +55,7 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
 	}
 
 	//удалять товар может только его создатель
-	if (product.supervisor.toString() !== req.user.id) {
+	if (product.supervisor.toString() !== req.user._id) {
 		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на удаление этого продукта`, 401))
 	}
 
@@ -80,12 +80,29 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
 })
 
 /*
-    @desc       получение списка своих товаров
+    @desc       получение списка товаров босса
     @route      GET /api/supervisor/:supervisorId/products
-    @access     public
+    @access     private
 */
 exports.getProducts = asyncHandler(async (req, res, next) => {
+
+	if (!req.user.supervisor || req.user.supervisor.toString() !== req.params.id) {
+		return next(new ErrorResponse(`Ваш босс не ${req.params.id}`, 403))
+	}
+
 	const products = await Product.find().where({ supervisor: req.params.id })
+
+	res.status(200).json(products)
+})
+
+
+/*
+    @desc       получение списка товаров босса
+    @route      GET /api/supervisor/me/products
+    @access     private
+*/
+exports.getMyProducts = asyncHandler(async (req, res, next) => {
+	const products = await Product.find().where({ supervisor: req.user._id })
 
 	res.status(200).json(products)
 })
