@@ -15,7 +15,6 @@ const cors = require('cors')
 
 //получение текущего ip адреса
 const ip = require('ip')
-console.log('ip', ip.address())
 
 //middleware
 const errorHandler = require('./middleware/error')
@@ -46,7 +45,7 @@ app.use(express.json())
 
 //Логгирование во время разработки
 if (process.env.NODE_ENV === 'development') {
-	app.use(morgan('dev'))
+  app.use(morgan('dev'))
 }
 
 //Защита от NoSql инъекций
@@ -60,10 +59,6 @@ app.use(cors())
 //Установка статического фолдера
 app.use(express.static(path.join(__dirname, 'public')))
 
-// const { handshake } = require('./controllers/basicController')
-
-//рукопожатие для всех пользователей
-// app.post('/api/handshake', handshake)
 // привязка путей
 app.use('/api/couriers', couriers)
 app.use('/api/supervisors', supervisors)
@@ -76,16 +71,16 @@ app.use(errorHandler)
 const PORT = process.env.PORT || 5000
 const ip_address = ip.address()
 const server = app.listen(
-	PORT,
-	// ip_address,
-	console.log(`Сервер запущен на порту: ${PORT}`.yellow.bold)
+  PORT,
+  // ip_address,
+  console.log(`Сервер запущен на порту: ${PORT}`.yellow.bold)
 )
 
 //Если не удается соединиться с бд выключаем сервер
 process.on('unhandledRejection', (err, promise) => {
-	console.log(`Ошибка: ${err.message}`.red)
+  console.log(`Ошибка: ${err.message}`.red)
 
-	server.close(() => {
-		process.exit()
-	})
+  server.close(() => {
+    process.exit()
+  })
 })
