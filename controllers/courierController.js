@@ -105,7 +105,6 @@ exports.getCourier = asyncHandler(async (req, res, next) => {
   res.status(200).json(courier)
 })
 
-
 /*
     @desc       получение инф. о себе
     @route      GET /api/couriers/me
@@ -130,21 +129,24 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 exports.updateMe = asyncHandler(async (req, res, next) => {
   const id = req.user._id
 
-  const {isActive, isCurrentlyNotHere, coordinates, hint} = req.body
+  const { isActive, isCurrentlyNotHere, coordinates, hint } = req.body
 
-  const user = await User.findByIdAndUpdate(id, {
-    isActive,
-    isCurrentlyNotHere,
-    hint,
-    coordinates
-  }, { new: true, runValidators: true })
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      isActive,
+      isCurrentlyNotHere,
+      hint,
+      coordinates
+    },
+    { new: true, runValidators: true }
+  )
 
   res.status(200).json(user)
-
 })
 
 /*
-    @desc       обновление полей курьера
+    @desc       обновление полей курьера (для босса)
     @route      PUT /api/couriers/:id
     @access     private
 */
@@ -171,43 +173,6 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       обновление полей курьера
-    @route      PUT /api/couriers/:id/self
-    @access     private
-*/
-exports.updateSelf = asyncHandler(async (req, res, next) => {
-  let courier = await User.findById(req.params.id)
-
-  const { isActive, isCurrentlyNotHere, coordinates, hint } = req.body
-
-  if (!courier) {
-    return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
-  }
-
-  if (req.params.id != req.user._id.toString()) {
-    return next(
-      new ErrorResponse('u cant change the info about other user', 403)
-    )
-  }
-
-  courier = await User.findByIdAndUpdate(
-    req.params.id,
-    {
-      isActive,
-      isCurrentlyNotHere,
-      coordinates,
-      hint
-    },
-    {
-      new: true,
-      runValidators: true
-    }
-  ).populate('productList')
-
-  res.status(200).json(courier)
-})
-
-/*
-    @desc       обновление полей курьера
     @route      POST /api/couriers/addsupervisor
     @access     private
 */
@@ -217,13 +182,12 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
     role: 'courier'
   })
 
-  if (!courier) {
-    return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
-  }
-
-  if (courier.supervisor != null) {
+  if (!courier || !courier.supervisor) {
     return next(
-      new ErrorResponse(`? ??????? ${courier._id} ??? ???? ????????????`, 403)
+      new ErrorResponse(
+        `Нет курьера с айди ${req.params.id} либо у него уже есть руководство`,
+        404
+      )
     )
   }
 

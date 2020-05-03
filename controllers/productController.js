@@ -55,7 +55,7 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
 	}
 
 	//удалять товар может только его создатель
-	if (product.supervisor.toString() !== req.user._id) {
+	if (product.supervisor.toString() !== req.user._id.toString()) {
 		return next(new ErrorResponse(`Босс с id ${req.user.id} не имеет прав на удаление этого продукта`, 401))
 	}
 
