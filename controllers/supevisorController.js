@@ -194,6 +194,8 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 				supervisorStatus: 'disabled',
 				avgRating: null
 			})
+
+			obj = await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		}
 
 		await Code.deleteMany({ resolved: true })
