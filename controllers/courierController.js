@@ -2,7 +2,6 @@ const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
 const User = require('./../models/User')
 const Code = require('./../models/Code')
-const mongoose = require('mongoose')
 
 const TokenGenerator = require('uuid-token-generator')
 const tokgen = new TokenGenerator(512, TokenGenerator.BASE62)
@@ -49,8 +48,6 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
     @access     public
 */
 
-// const {client} = require('./../config/mongo')
-
 exports.getAllCouriers = asyncHandler(async (req, res, next) => {
   if (req.query.box) {
     const box = req.query.box.split(',')
@@ -76,6 +73,8 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 
   res.status(200).json(couriers)
 })
+
+
 
 /*
     @desc       получение списка курьеров босса
@@ -380,11 +379,6 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
         productList: [],
         coordinates: null
       })
-      obj = await Code.findById(
-        codeId,
-        { resolved: true },
-        { new: true, runValidators: true }
-      )
     }
 
     await Code.deleteMany({ resolved: true })
