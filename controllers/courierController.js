@@ -1,6 +1,6 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
-const User = require('./../models/User')
+const Courier = require('./../models/Courier')
 const Code = require('./../models/Code')
 
 const TokenGenerator = require('uuid-token-generator')
@@ -22,7 +22,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
     const lowerLeft = box.slice(0, 2)
     const upperRight = box.slice(2)
 
-    const couriers = await User.find()
+    const couriers = await Courier.find()
       .where({ role: 'courier', isActive: active })
       .where('coordinates')
       .within()
@@ -33,7 +33,7 @@ exports.getCouriers = asyncHandler(async (req, res, next) => {
     return
   }
 
-  const couriers = await User.find()
+  const couriers = await Courier.find()
     .where({ role: 'courier', isActive: active })
     .where('coordinates')
     .ne(null)
@@ -63,11 +63,11 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 
     const a = 30
     const b = 30
-    const clusters = await User.getBetterClusters(lowerLeft, upperRight, a, b)
+    const clusters = await Courier.getBetterClusters(lowerLeft, upperRight, a, b)
     return res.status(200).json(clusters)
   }
 
-  const couriers = await User.find()
+  const couriers = await Courier.find()
     .where({ role: 'courier' })
     .populate('productList')
 
@@ -82,7 +82,7 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
     @access     private
 */
 exports.getMyCouriers = asyncHandler(async (req, res, next) => {
-  const couriers = await User.find()
+  const couriers = await Courier.find()
     .where({ role: 'courier', supervisor: req.user._id })
     .populate('productList')
 
@@ -95,7 +95,7 @@ exports.getMyCouriers = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.getCourier = asyncHandler(async (req, res, next) => {
-  const courier = await User.findById(req.params.id).populate('productList')
+  const courier = await Courier.findById(req.params.id).populate('productList')
 
   if (!courier) {
     return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -111,7 +111,7 @@ exports.getCourier = asyncHandler(async (req, res, next) => {
 */
 exports.getMe = asyncHandler(async (req, res, next) => {
   const id = req.user._id
-  const user = await User.findById(id).populate('productList')
+  const user = await Courier.findById(id).select('+token').populate('productList')
 
   if (!user) {
     return next(new ErrorResponse(`Пользователя с id ${id} не существует`, 404))
@@ -128,13 +128,13 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 exports.updateMe = asyncHandler(async (req, res, next) => {
   const id = req.user._id
 
-  const { isActive, isCurrentlyNotHere, coordinates, hint } = req.body
+  const { isActive, isAway, coordinates, hint } = req.body
 
-  const user = await User.findByIdAndUpdate(
+  const user = await Courier.findByIdAndUpdate(
     id,
     {
       isActive,
-      isCurrentlyNotHere,
+      isAway,
       hint,
       coordinates
     },
@@ -150,7 +150,7 @@ exports.updateMe = asyncHandler(async (req, res, next) => {
     @access     private
 */
 exports.updateCourier = asyncHandler(async (req, res, next) => {
-  let courier = await User.findById(req.params.id)
+  let courier = await Courier.findById(req.params.id)
 
   if (!courier) {
     return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
@@ -158,7 +158,7 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 
   const { name } = req.body
 
-  courier = await User.findByIdAndUpdate(
+  courier = await Courier.findByIdAndUpdate(
     req.params.id,
     { name },
     {
@@ -171,28 +171,28 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 })
 
 /*
-    @desc       обновление полей курьера
+    @desc       добавить куратора для курьера
     @route      POST /api/couriers/addsupervisor
     @access     private
 */
 exports.addSupervisor = asyncHandler(async (req, res, next) => {
-  let courier = await User.findOne({
+  let courier = await Courier.findOne({
     phoneNumber: req.body.phoneNumber,
     role: 'courier'
   })
 
-  if (!courier || !courier.supervisor) {
+  if (!courier || courier.supervisor !== null) {
     return next(
       new ErrorResponse(
-        `Нет курьера с айди ${req.params.id} либо у него уже есть руководство`,
+        `Нет курьера с номером телефона ${req.body.phoneNumber} либо у него уже есть руководство`,
         404
       )
     )
   }
 
-  courier = await User.findOneAndUpdate(
+  courier = await Courier.findOneAndUpdate(
     { phoneNumber: req.body.phoneNumber, role: 'courier' },
-    { supervisor: req.body.supervisor },
+    { supervisor: req.user },
     {
       new: true,
       runValidators: true
@@ -204,11 +204,11 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       обновление полей курьера
-    @route      POST /api/couriers/removesupervisor
+    @route      GET /api/couriers/:id/removesupervisor
     @access     private
 */
 exports.removeSupervisor = asyncHandler(async (req, res, next) => {
-  let courier = await User.findById(req.body.courierId)
+  let courier = await Courier.findById(req.body.courierId)
 
   if (!courier) {
     return next(
@@ -216,11 +216,11 @@ exports.removeSupervisor = asyncHandler(async (req, res, next) => {
     )
   }
 
-  if (courier.supervisor.toString() != req.user._id.toString()) {
+  if (courier.supervisor.toString() !== req.user._id.toString()) {
     return next(new ErrorResponse(`??? ?? ??? ??????`, 403))
   }
 
-  courier = await User.findByIdAndUpdate(
+  courier = await Courier.findByIdAndUpdate(
     req.body.courierId,
     {
       supervisor: null,
@@ -242,24 +242,18 @@ exports.removeSupervisor = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       обновление полей курьера
-    @route      GET /api/couriers/:id/unsubscribe
+    @route      GET /api/couriers/me/unsubscribe
     @access     private
 */
 exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
-  let courier = await User.findById(req.params.id)
+  let courier = await Courier.findById(req.user._id)
 
   if (!courier) {
     return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
   }
 
-  if (req.params.id != req.user._id) {
-    return next(
-      new ErrorResponse('u cant change the info about other user', 403)
-    )
-  }
-
-  courier = await User.findByIdAndUpdate(
-    req.params.id,
+  courier = await Courier.findByIdAndUpdate(
+    req.user._id,
     {
       isActive: false,
       isCurrentlyNotHere: false,
@@ -273,7 +267,7 @@ exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
       new: true,
       runValidators: true
     }
-  ).populate('productList')
+  )
 
   res.status(200).json(courier)
 })
@@ -284,13 +278,13 @@ exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.deleteCourier = asyncHandler(async (req, res, next) => {
-  let courier = await User.findById(req.params.id)
+  let courier = await Courier.findById(req.params.id)
 
   if (!courier) {
     return next(new ErrorResponse(`Нет курьера с айди ${req.params.id}`, 404))
   }
 
-  courier = await User.findByIdAndDelete(req.params.id)
+  courier = await Courier.findByIdAndDelete(req.params.id)
 
   res.status(200).json(courier)
 })
@@ -330,8 +324,7 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
     },
     token: fcmToken
   }
-  const result = await admin.messaging().send(message)
-  console.log(result)
+  // await admin.messaging().send(message)
   res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 
@@ -348,44 +341,34 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
   if (obj.code !== code) {
     return next(new ErrorResponse('Неправильный код', 400))
   } else {
-    let courier = await User.findOne({
+    let courier = await Courier.findOne({
       phoneNumber: obj.phoneNumber,
       role: 'courier'
     })
 
     if (courier) {
-      courier = await User.findOneAndUpdate(
+      courier = await Courier.findOneAndUpdate(
         { phoneNumber: obj.phoneNumber, role: 'courier' },
         { token },
         { new: true, runValidators: true }
       ).populate('productList')
 
-      obj = await Code.findByIdAndUpdate(
+      await Code.findByIdAndUpdate(
         codeId,
         { resolved: true },
         { new: true, runValidators: true }
       )
     } else {
-      courier = await User.create({
+      courier = await Courier.create({
         token,
-        name: '',
-        hint: '',
         phoneNumber: obj.phoneNumber,
-        role: 'courier',
-        isActive: false,
-        isCurrentlyNotHere: false,
-        supervisor: null,
-        avgRating: null,
-        productList: [],
-        coordinates: null
       })
 
-      obj = await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
+      await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
     }
 
     await Code.deleteMany({ resolved: true })
 
     res.status(200).json(courier)
-    return
   }
 })

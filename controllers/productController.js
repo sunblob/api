@@ -1,7 +1,7 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
 const Product = require('../models/Product')
-const User = require('./../models/User')
+const Courier = require('./../models/Courier')
 
 /*
     @desc       создание товара для продажи
@@ -114,7 +114,7 @@ exports.getMyProducts = asyncHandler(async (req, res, next) => {
 */
 exports.toggleProductInList = asyncHandler(async (req, res, next) => {
 	const product = await Product.findById(req.params.id)
-	let courier = await User.findById(req.user._id)
+	let courier = await Courier.findById(req.user._id)
 
 	if (!product) {
 		return next(new ErrorResponse(`Продукта ${req.params.id} не существует`))
@@ -132,7 +132,7 @@ exports.toggleProductInList = asyncHandler(async (req, res, next) => {
 
 	await courier.save()
 
-	courier = await User.findById(req.user._id).populate('productList')
+	courier = await Courier.findById(req.user._id).populate('productList')
 
 	res.status(200).json(courier)
 })

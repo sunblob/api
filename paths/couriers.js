@@ -16,48 +16,53 @@ const {
   updateMe
 } = require('../controllers/courierController')
 
+const Courier = require('./../models/Courier')
+const Client = require('../models/Client')
+const Supervisor = require('../models/Supervisor')
+
 const { createReviewForCourier } = require('../controllers/reviewController')
 
 const router = express.Router()
 
 const {
   protect,
+  protectUser,
   authorize,
   authorizeCourier
 } = require('../middleware/authProtect')
 
 router
   .route('/me')
-  .get(protect, authorize('courier'), getMe)
-  .put(protect, authorize('courier'), updateMe)
+  .get(protectUser(Courier), authorize('courier'), getMe)
+  .put(protectUser(Courier), authorize('courier'), updateMe)
 
 router
   .route('/:id/reviews')
-  .post(protect, authorize('user'), createReviewForCourier)
+  .post(protectUser(Client), authorize('user'), createReviewForCourier)
 
 router.route('/').get(getCouriers)
 
 router.route('/all').get(getAllCouriers)
 
-router.route('/my').get(protect, authorize('supervisor'), getMyCouriers)
+router.route('/my').get(protectUser(Supervisor), authorize('supervisor'), getMyCouriers)
 
 router
   .route('/addsupervisor')
-  .post(protect, authorize('supervisor'), addSupervisor)
+  .post(protectUser(Supervisor), authorize('supervisor'), addSupervisor)
 
 router
   .route('/removesupervisor')
-  .post(protect, authorize('supervisor'), removeSupervisor)
+  .post(protectUser(Supervisor), authorize('supervisor'), removeSupervisor)
 
 router
-  .route('/:id/unsubscribe')
-  .get(protect, authorize('courier'), authorizeCourier(), removeSupervisorSelf)
+  .route('/me/unsubscribe')
+  .get(protectUser(Courier), authorize('courier'), authorizeCourier(), removeSupervisorSelf)
 
 router
   .route('/:id')
   .get(getCourier)
-  .put(protect, authorize('supervisor'), updateCourier)
-  .delete(protect, authorize('courier'), deleteCourier)
+  .put(protectUser(Supervisor), authorize('supervisor'), updateCourier)
+  .delete(protectUser(Courier), authorize('courier'), deleteCourier)
 
 router.route('/auth').post(authWithNumber)
 

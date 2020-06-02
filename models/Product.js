@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-// оценка для курьера
+//Товар
 const ProductSchema = mongoose.Schema(
 	{
 		type: {
@@ -12,14 +12,9 @@ const ProductSchema = mongoose.Schema(
 			type: String,
 			required: true
 		},
-		amount: {
-			type: Number,
-			min: 1
-			// required: true
-		},
 		supervisor: {
 			type: mongoose.Schema.ObjectId,
-			ref: 'User',
+			ref: 'Supervisor',
 			required: true
 		}
 	},
@@ -32,7 +27,7 @@ const ProductSchema = mongoose.Schema(
 )
 
 ProductSchema.pre('remove', async function(next) {
-	await this.model('User').update({ productList: this._id }, { $pull: { productList: this._id } }, { multi: true })
+	await this.model('Courier').update({ productList: this._id }, { $pull: { productList: this._id } }, { multi: true })
 	next()
 })
 

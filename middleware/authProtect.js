@@ -1,7 +1,8 @@
-const jwt = require('jsonwebtoken')
 const asyncHandler = require('./async')
 const ErrorResponse = require('../utils/errorResponse.js')
-const User = require('../models/User')
+// const User = require('../models/User')
+const Client = require('../models/Client')
+const Courier = require('../models/Courier')
 
 // Защита роутов
 exports.protect = asyncHandler(async (req, res, next) => {
@@ -9,23 +10,41 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
 	if (req.headers.authorization) {
 		token = req.headers.authorization
-		// console.log('token', token)
 	}
 
 	//Если токен не существует
-	if (!token || token == '') {
+	if (!token || token === '') {
 		return next(new ErrorResponse('нет доступа к данному роуту', 401))
 	}
 
-	// try {
-	// 	// проверка токена
-	// 	req.user = await User.findOne({ token })
+	// req.user = await User.findOne({token})
 
-	// 	next()
-	// } catch (error) {
-	// 	return next(new ErrorResponse('возможно токена больше не существует', 404))
-	// }
-	req.user = await User.findOne({token})
+	if (!req.user) {
+		return next(new ErrorResponse('Неверный токен, либо его не существует', 404))
+	} else {
+		next()
+	}
+})
+
+exports.protectUser = (model) => asyncHandler(async (req, res, next) => {
+	let token
+
+	if (!model) {
+		return next(new ErrorResponse('Ошибка сервера', 500))
+	}
+
+	if (req.headers.authorization) {
+		token = req.headers.authorization
+	}
+
+
+	//Если токен не существует
+	if (!token || token === '') {
+		return next(new ErrorResponse('нет доступа к данному роуту', 401))
+	}
+
+	req.user = await model.findOne({ token })
+	// console.log('User: ', req.user, 'model: ', model)
 
 	if (!req.user) {
 		return next(new ErrorResponse('Неверный токен, либо его не существует', 404))
@@ -53,11 +72,10 @@ exports.authorize = (...roles) => {
 exports.authorizeCourier = () => {
 	return (req, res, next) => {
 		const { supervisor } = req.user
-		console.log("super", supervisor)
+		// console.log("super", supervisor)
 		if (supervisor === null) {
 			return next(new ErrorResponse(`У курьера нет прав на выполение действий без руководства`, 403))
 		}
-
 		next()
 	}
 }

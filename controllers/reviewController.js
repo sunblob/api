@@ -1,7 +1,10 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
-const Review = require('../models/Review')
-const User = require('./../models/User')
+
+const CourierReview = require('../models/CourierReview')
+const SupervisorReview = require('../models/SupervisorReview')
+const Courier = require('./../models/Courier')
+const Supervisor = require('./../models/Supervisor')
 
 /*
     @desc       создание отзыва о курьере
@@ -11,19 +14,19 @@ const User = require('./../models/User')
 exports.createReviewForCourier = asyncHandler(async (req, res, next) => {
 	const { rating } = req.body
 	const user = req.user
-	const courier = await User.findById(req.params.id)
+	const courier = await Courier.findById(req.params.id)
 
-	let review = await Review.findOne({
+	if (!courier || courier.role !== 'courier') {
+		return next(new ErrorResponse('Этот пользователь не курьер', 403))
+	}
+
+	let review = await CourierReview.findOne({
 		courier: req.params.id,
 		user: user._id
 	})
 
-	if (!courier || courier.role != 'courier') {
-		return next(new ErrorResponse('Этот пользователь не курьер', 400))
-	}
-
 	if (!review) {
-		review = await Review.create({
+		review = await CourierReview.create({
 			courier: courier._id,
 			rating,
 			user: user._id
@@ -44,15 +47,16 @@ exports.createReviewForCourier = asyncHandler(async (req, res, next) => {
 exports.createReviewForSupervisor = asyncHandler(async (req, res, next) => {
 	const { rating } = req.body
 	const user = req.user
-	const supervisor = await User.findById(req.params.id)
-	let review = await Review.findOne({ supervisor: req.params.id, user: user._id })
+	const supervisor = await Supervisor.findById(req.params.id)
 
-	if (!supervisor || supervisor.role != 'supervisor') {
-		return next(new ErrorResponse('Этот пользователь не босс', 400))
+	if (!supervisor || supervisor.role !== 'supervisor') {
+		return next(new ErrorResponse('Этот пользователь не куратор', 403))
 	}
 
+	let review = await SupervisorReview.findOne({ supervisor: req.params.id, user: user._id })
+
 	if (!review) {
-		review = await Review.create({
+		review = await SupervisorReview.create({
 			supervisor: supervisor._id,
 			rating,
 			user: user._id

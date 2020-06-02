@@ -1,6 +1,6 @@
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/errorResponse')
-const User = require('../models/User')
+const Supervisor = require('../models/Supervisor')
 const Code = require('./../models/Code')
 
 const TokenGenerator = require('uuid-token-generator')
@@ -13,7 +13,7 @@ const admin = require('firebase-admin')
     @access     public
 */
 exports.getSupervisors = asyncHandler(async (req, res, next) => {
-	const supervisors = await User.find().where({ role: 'supervisor' })
+	const supervisors = await Supervisor.find().where({ role: 'supervisor' })
 
 	res.status(200).json(supervisors)
 })
@@ -24,7 +24,7 @@ exports.getSupervisors = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.getSupervisor = asyncHandler(async (req, res, next) => {
-	const supervisor = await User.findById(req.params.id)
+	const supervisor = await Supervisor.findById(req.params.id)
 
 	if (!supervisor) {
 		return next(new ErrorResponse(`Нет босса с айди ${req.params.id}`, 404))
@@ -40,7 +40,7 @@ exports.getSupervisor = asyncHandler(async (req, res, next) => {
 */
 exports.getMe = asyncHandler(async (req, res, next) => {
 	const id = req.user._id
-	const supervisor = await User.findById(id)
+	const supervisor = await Supervisor.findById(id)
 
 	if (!supervisor) {
 		return next(new ErrorResponse(`Нет босса с айди ${id}`, 404))
@@ -55,7 +55,7 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.updateSupervisor = asyncHandler(async (req, res, next) => {
-	let supervisor = await User.findById(req.params.id)
+	let supervisor = await Supervisor.findById(req.params.id)
 
 	if (!supervisor) {
 		return next(new ErrorResponse(`Нет босса с айди ${req.params.id}`, 404))
@@ -67,7 +67,7 @@ exports.updateSupervisor = asyncHandler(async (req, res, next) => {
 
 	const { name } = req.body
 
-	supervisor = await User.findByIdAndUpdate(
+	supervisor = await Supervisor.findByIdAndUpdate(
 		req.params.id,
 		{ name },
 		{
@@ -87,7 +87,7 @@ exports.updateSupervisor = asyncHandler(async (req, res, next) => {
 exports.updateMe = asyncHandler(async (req, res, next) => {
 	const id = req.user._id
 
-	let supervisor = await User.findById(id)
+	let supervisor = await Supervisor.findById(id)
 
 	if (!supervisor) {
 		return next(new ErrorResponse(`Нет босса с айди ${id}`, 404))
@@ -95,7 +95,7 @@ exports.updateMe = asyncHandler(async (req, res, next) => {
 
 	const { name } = req.body
 
-	supervisor = await User.findByIdAndUpdate(
+	supervisor = await Supervisor.findByIdAndUpdate(
 		id,
 		{ name },
 		{
@@ -114,13 +114,13 @@ exports.updateMe = asyncHandler(async (req, res, next) => {
     @access     public
 */
 exports.deleteSupervisor = asyncHandler(async (req, res, next) => {
-	let supervisor = await User.findById(req.params.id)
+	let supervisor = await Supervisor.findById(req.params.id)
 
 	if (!supervisor) {
 		return next(new ErrorResponse(`Нет босса с айди ${req.params.id}`, 404))
 	}
 
-	supervisor = await User.findByIdAndDelete(req.params.id)
+	supervisor = await Supervisor.findByIdAndDelete(req.params.id)
 
 	res.status(200).json(supervisor)
 })
@@ -154,8 +154,7 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 		},
 		token: fcmToken
 	}
-	const result = await admin.messaging().send(message)
-	console.log(result)
+	// await admin.messaging().send(message)
 	res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 /*
@@ -176,31 +175,26 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 	if (obj.code !== code) {
 		return next(new ErrorResponse('Неправильный код', 400))
 	} else {
-		let supervisor = await User.findOne({ phoneNumber: obj.phoneNumber, role: 'supervisor' })
+		let supervisor = await Supervisor.findOne({ phoneNumber: obj.phoneNumber, role: 'supervisor' })
 
 		if (supervisor) {
-			supervisor = await User.findOneAndUpdate(
+			supervisor = await Supervisor.findOneAndUpdate(
 				{ phoneNumber: obj.phoneNumber, role: 'supervisor' },
 				{ token },
 				{ new: true, runValidators: true }
 			)
-			obj = await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
+			await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		} else {
-			supervisor = await User.create({
+			supervisor = await Supervisor.create({
 				token,
-				name: '',
 				phoneNumber: obj.phoneNumber,
-				role: 'supervisor',
-				supervisorStatus: 'disabled',
-				avgRating: null
 			})
 
-			obj = await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
+			await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		}
 
 		await Code.deleteMany({ resolved: true })
 
 		res.status(200).json(supervisor)
-		return
 	}
 })
