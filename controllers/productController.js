@@ -33,7 +33,7 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Товара с id ${req.params.id} не сущетвует`, 404))
 	}
 
-	if (product.supervisor.toString() !== req.user._id) {
+	if (product.supervisor.toString() !== req.user._id.toString()) {
 		return next(new ErrorResponse(`Босс с id ${req.user._id} не имеет прав на редактирование этого продукта`, 401))
 	}
 

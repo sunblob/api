@@ -5,7 +5,8 @@ const UserSchema = mongoose.Schema(
   {
     token: {
       type: String,
-      unique: true
+      unique: true,
+      select: false
     },
     name: {
       type: String,

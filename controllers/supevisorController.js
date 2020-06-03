@@ -40,7 +40,7 @@ exports.getSupervisor = asyncHandler(async (req, res, next) => {
 */
 exports.getMe = asyncHandler(async (req, res, next) => {
 	const id = req.user._id
-	const supervisor = await Supervisor.findById(id)
+	const supervisor = await Supervisor.findById(id).select('+token')
 
 	if (!supervisor) {
 		return next(new ErrorResponse(`Нет босса с айди ${id}`, 404))
@@ -102,7 +102,7 @@ exports.updateMe = asyncHandler(async (req, res, next) => {
 			new: true,
 			runValidators: true
 		}
-	)
+	).select('+token')
 
 	res.status(200).json(supervisor)
 })
@@ -154,7 +154,7 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
 		},
 		token: fcmToken
 	}
-	// await admin.messaging().send(message)
+	await admin.messaging().send(message)
 	res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 /*

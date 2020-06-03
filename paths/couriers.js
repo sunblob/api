@@ -38,25 +38,32 @@ router
 
 router
   .route('/:id/reviews')
-  .post(protectUser(Client), authorize('user'), createReviewForCourier)
+  .post(protectUser(Client), authorize('client'), createReviewForCourier)
 
 router.route('/').get(getCouriers)
 
 router.route('/all').get(getAllCouriers)
 
-router.route('/my').get(protectUser(Supervisor), authorize('supervisor'), getMyCouriers)
+router
+  .route('/my')
+  .get(protectUser(Supervisor), authorize('supervisor'), getMyCouriers)
 
 router
-  .route('/addsupervisor')
-  .post(protectUser(Supervisor), authorize('supervisor'), addSupervisor)
+  .route('/:phoneNumber/addsupervisor')
+  .get(protectUser(Supervisor), authorize('supervisor'), addSupervisor)
 
 router
-  .route('/removesupervisor')
-  .post(protectUser(Supervisor), authorize('supervisor'), removeSupervisor)
+  .route('/:courierId/removesupervisor')
+  .get(protectUser(Supervisor), authorize('supervisor'), removeSupervisor)
 
 router
   .route('/me/unsubscribe')
-  .get(protectUser(Courier), authorize('courier'), authorizeCourier(), removeSupervisorSelf)
+  .get(
+    protectUser(Courier),
+    authorize('courier'),
+    authorizeCourier(),
+    removeSupervisorSelf
+  )
 
 router
   .route('/:id')

@@ -63,7 +63,12 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 
     const a = 30
     const b = 30
-    const clusters = await Courier.getBetterClusters(lowerLeft, upperRight, a, b)
+    const clusters = await Courier.getBetterClusters(
+      lowerLeft,
+      upperRight,
+      a,
+      b
+    )
     return res.status(200).json(clusters)
   }
 
@@ -73,8 +78,6 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 
   res.status(200).json(couriers)
 })
-
-
 
 /*
     @desc       получение списка курьеров босса
@@ -111,7 +114,9 @@ exports.getCourier = asyncHandler(async (req, res, next) => {
 */
 exports.getMe = asyncHandler(async (req, res, next) => {
   const id = req.user._id
-  const user = await Courier.findById(id).select('+token').populate('productList')
+  const user = await Courier.findById(id)
+    .select('+token')
+    .populate('productList')
 
   if (!user) {
     return next(new ErrorResponse(`Пользователя с id ${id} не существует`, 404))
@@ -172,12 +177,12 @@ exports.updateCourier = asyncHandler(async (req, res, next) => {
 
 /*
     @desc       добавить куратора для курьера
-    @route      POST /api/couriers/addsupervisor
+    @route      GET /api/couriers/:phoneNumber/addsupervisor
     @access     private
 */
 exports.addSupervisor = asyncHandler(async (req, res, next) => {
   let courier = await Courier.findOne({
-    phoneNumber: req.body.phoneNumber,
+    phoneNumber: req.params.phoneNumber,
     role: 'courier'
   })
 
@@ -191,7 +196,7 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
   }
 
   courier = await Courier.findOneAndUpdate(
-    { phoneNumber: req.body.phoneNumber, role: 'courier' },
+    { phoneNumber: req.params.phoneNumber, role: 'courier' },
     { supervisor: req.user },
     {
       new: true,
@@ -208,11 +213,11 @@ exports.addSupervisor = asyncHandler(async (req, res, next) => {
     @access     private
 */
 exports.removeSupervisor = asyncHandler(async (req, res, next) => {
-  let courier = await Courier.findById(req.body.courierId)
+  let courier = await Courier.findById(req.params.courierId)
 
   if (!courier) {
     return next(
-      new ErrorResponse(`??????? ? id ${req.body.courierId} ???`, 403)
+      new ErrorResponse(`??????? ? id ${req.params.courierId} ???`, 403)
     )
   }
 
@@ -221,7 +226,7 @@ exports.removeSupervisor = asyncHandler(async (req, res, next) => {
   }
 
   courier = await Courier.findByIdAndUpdate(
-    req.body.courierId,
+    req.params.courierId,
     {
       supervisor: null,
       isActive: false,
@@ -267,7 +272,7 @@ exports.removeSupervisorSelf = asyncHandler(async (req, res, next) => {
       new: true,
       runValidators: true
     }
-  )
+  ).select('+token')
 
   res.status(200).json(courier)
 })
@@ -324,7 +329,7 @@ exports.authWithNumber = asyncHandler(async (req, res, next) => {
     },
     token: fcmToken
   }
-  // await admin.messaging().send(message)
+  await admin.messaging().send(message)
   res.status(200).json({ code: generatedCode, codeId: code._id })
 })
 
@@ -361,10 +366,14 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
     } else {
       courier = await Courier.create({
         token,
-        phoneNumber: obj.phoneNumber,
+        phoneNumber: obj.phoneNumber
       })
 
-      await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
+      await Code.findByIdAndUpdate(
+        codeId,
+        { resolved: true },
+        { new: true, runValidators: true }
+      )
     }
 
     await Code.deleteMany({ resolved: true })
