@@ -63,7 +63,7 @@ exports.getAllCouriers = asyncHandler(async (req, res, next) => {
 
     const a = 30
     const b = 30
-    const clusters = await Courier.getBetterClusters(
+    const clusters = await Courier.getClusters(
       lowerLeft,
       upperRight,
       a,
@@ -356,7 +356,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
         { phoneNumber: obj.phoneNumber, role: 'courier' },
         { token },
         { new: true, runValidators: true }
-      ).populate('productList')
+      ).select('+token').populate('productList')
 
       await Code.findByIdAndUpdate(
         codeId,
@@ -367,7 +367,7 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
       courier = await Courier.create({
         token,
         phoneNumber: obj.phoneNumber
-      })
+      }).select('+token')
 
       await Code.findByIdAndUpdate(
         codeId,

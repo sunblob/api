@@ -182,13 +182,13 @@ exports.codeCheck = asyncHandler(async (req, res, next) => {
 				{ phoneNumber: obj.phoneNumber, role: 'supervisor' },
 				{ token },
 				{ new: true, runValidators: true }
-			)
+			).select('+token')
 			await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		} else {
 			supervisor = await Supervisor.create({
 				token,
 				phoneNumber: obj.phoneNumber,
-			})
+			}).select('+token')
 
 			await Code.findByIdAndUpdate(codeId, { resolved: true }, { new: true, runValidators: true })
 		}
